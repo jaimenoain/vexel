@@ -110,7 +110,7 @@ async function runTest() {
         .insert({
             asset_id: publicAsset.id,
             user_id: userB.user.id,
-            access_level: 'VIEW'
+            permission_level: 'READ_ONLY'
         });
     if (grantError) throw grantError;
     console.log('Access granted.');

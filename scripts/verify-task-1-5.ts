@@ -142,7 +142,7 @@ async function runTest() {
         .insert({
             asset_id: assetId,
             user_id: userA.user.id,
-            access_level: 'VIEW'
+            permission_level: 'READ_ONLY'
         });
 
     if (grantError) throw new Error(`Failed to grant access: ${grantError.message}`);

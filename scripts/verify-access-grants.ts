@@ -85,18 +85,28 @@ async function verifyAccessGrants() {
         RETURNING id INTO v_user_id;
 
         -- Insert dummy asset
+        -- NOTE: This triggers 'handle_new_asset_grant', which automatically inserts
+        -- (v_asset_id, v_user_id, 'OWNER') into access_grants.
         INSERT INTO public.assets (name, owner_id, currency)
-        VALUES ('Test Asset', v_user_id, 'USD') -- Added currency 'USD' as per memory constraint
+        VALUES ('Test Asset', v_user_id, 'USD')
         RETURNING id INTO v_asset_id;
 
-        -- 2. Insert an access grant
-        INSERT INTO public.access_grants (asset_id, user_id, access_level)
-        VALUES (v_asset_id, v_user_id, 'VIEW');
+        -- 2. Verify automatic grant existence
+        IF NOT EXISTS (
+            SELECT 1 FROM public.access_grants
+            WHERE asset_id = v_asset_id
+            AND user_id = v_user_id
+            AND permission_level = 'OWNER'
+        ) THEN
+            RAISE EXCEPTION 'Trigger Fail: Automatic OWNER grant was not created.';
+        ELSE
+            RAISE NOTICE 'SUCCESS: Automatic OWNER grant created.';
+        END IF;
 
-        -- 3. Attempt insert second grant
+        -- 3. Attempt insert second grant (Should fail due to Uniqueness)
         BEGIN
-            INSERT INTO public.access_grants (asset_id, user_id, access_level)
-            VALUES (v_asset_id, v_user_id, 'EDIT');
+            INSERT INTO public.access_grants (asset_id, user_id, permission_level)
+            VALUES (v_asset_id, v_user_id, 'READ_ONLY');
 
             RAISE EXCEPTION 'Constraint Missing: Duplicate grant was allowed!';
         EXCEPTION WHEN unique_violation THEN
