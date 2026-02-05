@@ -4,29 +4,33 @@ import path from 'path';
 
 // Simple env loader for local testing
 const loadEnv = () => {
-  const envPath = path.resolve(__dirname, '../.env.local');
-  if (fs.existsSync(envPath)) {
-    const envConfig = fs.readFileSync(envPath, 'utf8');
-    envConfig.split('\n').forEach((line) => {
-      const parts = line.split('=');
-      if (parts.length >= 2) {
-        const key = parts[0].trim();
-        const value = parts.slice(1).join('=').trim().replace(/^["']|["']$/g, ''); // Remove quotes
-        if (key && value) {
-          process.env[key] = value;
+  const envFiles = ['.env', '.env.local'];
+
+  envFiles.forEach(file => {
+    const envPath = path.resolve(__dirname, `../${file}`);
+    if (fs.existsSync(envPath)) {
+      const envConfig = fs.readFileSync(envPath, 'utf8');
+      envConfig.split('\n').forEach((line) => {
+        const parts = line.split('=');
+        if (parts.length >= 2) {
+          const key = parts[0].trim();
+          const value = parts.slice(1).join('=').trim().replace(/^["']|["']$/g, ''); // Remove quotes
+          if (key && value) {
+            process.env[key] = value;
+          }
         }
-      }
-    });
-  }
+      });
+    }
+  });
 };
 
 loadEnv();
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Error: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in .env.local or environment.');
+  console.error('Error: Supabase URL and Key must be set in .env, .env.local or environment (NEXT_PUBLIC_ or VITE_ prefixes).');
   process.exit(1);
 }
 
