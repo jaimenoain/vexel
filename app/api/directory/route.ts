@@ -3,6 +3,19 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+// Exported for testing
+export function transformDirectoryData(data: any[]) {
+  return data.map((entity) => ({
+    ...entity,
+    assets: Array.isArray(entity.assets)
+      ? entity.assets.map((asset: any) => ({
+          ...asset,
+          net_worth: 0,
+        }))
+      : [],
+  }));
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) {
@@ -22,35 +35,21 @@ export async function GET(request: Request) {
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { data: assets, error } = await supabase.from('assets').select('*');
+  // Query entities and their associated assets.
+  // RLS will ensure:
+  // 1. Entities are only returned if the user has access to at least one asset in them.
+  // 2. The nested 'assets' array only contains assets the user has access to.
+  const { data, error } = await supabase
+    .from('entities')
+    .select('*, assets(*)')
+    .order('name'); // Order entities by name for consistent UI
 
   if (error) {
+    console.error('Database error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  // Transform to Entity -> Assets[] hierarchy
-  // Entity is identified by owner_id
-  const entitiesMap = new Map<string, { entity_id: string; assets: any[] }>();
-
-  assets.forEach((asset) => {
-    if (!entitiesMap.has(asset.owner_id)) {
-      entitiesMap.set(asset.owner_id, {
-        entity_id: asset.owner_id,
-        assets: [],
-      });
-    }
-    entitiesMap.get(asset.owner_id)!.assets.push({
-      ...asset,
-      net_worth: 0, // Placeholder requirement
-    });
-  });
-
-  const result = Array.from(entitiesMap.values());
+  const result = transformDirectoryData(data || []);
 
   return NextResponse.json(result);
 }
