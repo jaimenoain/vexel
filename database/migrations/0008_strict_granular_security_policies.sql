@@ -1,12 +1,7 @@
--- Migration: 0007_strict_granular_security.sql
+-- Migration: 0008_strict_granular_security_policies.sql
 -- Description: Implement Strict Granular Security model (RLS) for Entities and Assets.
 
--- 1. Update ENUM to include 'OWNER'
--- Note: adding a value to an enum cannot be done in a transaction block in some older Postgres versions.
--- If this fails, it must be run separately.
-ALTER TYPE public.app_permission ADD VALUE IF NOT EXISTS 'OWNER';
-
--- 2. Trigger Function for Zero Orphans
+-- 1. Trigger Function for Zero Orphans
 -- Ensures that when an asset is created, the creator is immediately granted 'OWNER' access.
 CREATE OR REPLACE FUNCTION public.handle_new_asset_grant()
 RETURNS TRIGGER AS $$
