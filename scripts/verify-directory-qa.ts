@@ -102,8 +102,8 @@ async function runLiveVerification() {
     const viewerEmail = `qa_viewer_${timestamp}@test.com`;
     const password = 'password123';
 
-    let ownerId: string;
-    let viewerId: string;
+    let ownerId: string | undefined;
+    let viewerId: string | undefined;
     let assetPublicId: string;
     let assetSecretId: string;
     let viewerToken: string;
