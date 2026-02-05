@@ -158,7 +158,7 @@ async function runLiveVerification() {
         const { error: grantError } = await supabaseAdmin.from('access_grants').insert({
             asset_id: assetPublicId,
             user_id: viewerId,
-            access_level: 'VIEW'
+            permission_level: 'READ_ONLY'
         });
         if (grantError) throw grantError;
 

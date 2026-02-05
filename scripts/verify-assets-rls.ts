@@ -156,7 +156,7 @@ async function runTest() {
         .insert({
             asset_id: assetId,
             user_id: userB.user.id,
-            access_level: 'VIEW'
+            permission_level: 'READ_ONLY'
         });
 
     if (grantError) {
