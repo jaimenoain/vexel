@@ -1,6 +1,6 @@
 export type Role = 'CONTROLLER' | 'PRINCIPAL';
 
-export type AppPermission = 'VIEW' | 'EDIT';
+export type AppPermission = 'VIEW' | 'EDIT' | 'OWNER';
 
 export interface Profile {
   id: string;
