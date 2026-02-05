@@ -8,7 +8,6 @@
 - Environments: .env
 
 ✓ Starting...
-✓ Ready in 1191ms
- GET /auth-test 200 in 801ms (compile: 440ms, render: 361ms)
-✓ Compiled in 56ms
-[?25h
+✓ Ready in 1164ms
+○ Compiling / ...
+ GET / 200 in 5.4s (compile: 5.0s, render: 420ms)
