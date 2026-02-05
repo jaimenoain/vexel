@@ -9,8 +9,7 @@ BEGIN
     RAISE NOTICE 'Test 1 (Positive): Inserting valid Entity and Asset...';
 
     -- Insert Entity "Smith Family"
-    -- Modified assumption: 'entities' table likely just has 'name'.
-    -- If it requires a 'type', this might fail, but 'FAMILY' being an Asset Type seems more plausible given the context of 'BANK' and 'CRYPTO'.
+    -- Relying on default type 'FAMILY'
     INSERT INTO public.entities (name)
     VALUES ('Smith Family')
     RETURNING id INTO v_entity_id;
