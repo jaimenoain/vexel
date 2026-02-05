@@ -1,20 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { buildDirectoryTree } from '@/lib/directory';
 
 export const dynamic = 'force-dynamic';
-
-// Exported for testing
-export function transformDirectoryData(data: any[]) {
-  return data.map((entity) => ({
-    ...entity,
-    assets: Array.isArray(entity.assets)
-      ? entity.assets.map((asset: any) => ({
-          ...asset,
-          net_worth: 0,
-        }))
-      : [],
-  }));
-}
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -49,7 +37,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const result = transformDirectoryData(data || []);
+  const result = buildDirectoryTree(data || []);
 
   return NextResponse.json(result);
 }

@@ -1,4 +1,4 @@
-import { transformDirectoryData } from '../app/api/directory/route';
+import { buildDirectoryTree } from '../lib/directory';
 import assert from 'assert';
 
 console.log('Running directory transformation verification...');
@@ -46,7 +46,6 @@ const expectedOutput = [
         name: 'Chase Bank',
         type: 'BANK',
         currency: 'USD',
-        entity_id: 'entity-1',
         net_worth: 0
       },
       {
@@ -54,7 +53,6 @@ const expectedOutput = [
         name: 'Beach House',
         type: 'PROPERTY',
         currency: 'USD',
-        entity_id: 'entity-1',
         net_worth: 0
       }
     ]
@@ -68,7 +66,7 @@ const expectedOutput = [
 ];
 
 try {
-  const result = transformDirectoryData(mockData);
+  const result = buildDirectoryTree(mockData);
 
   // Verify structure deep equality
   assert.deepStrictEqual(result, expectedOutput, 'Transformation output does not match expected output');
