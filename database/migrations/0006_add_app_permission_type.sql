@@ -6,6 +6,9 @@ BEGIN
     END IF;
 END $$;
 
+-- Drop dependent policies before altering column
+DROP POLICY IF EXISTS "Users can update assets" ON public.assets;
+
 -- Alter the access_grants table to use the new type
 DO $$
 BEGIN
@@ -18,6 +21,8 @@ BEGIN
         AND data_type = 'text'
     ) THEN
         -- Drop the existing CHECK constraint if it exists
+        -- Note: The constraint name is usually access_grants_access_level_check but might vary.
+
         ALTER TABLE public.access_grants DROP CONSTRAINT IF EXISTS access_grants_access_level_check;
 
         -- Change the column type
@@ -26,6 +31,19 @@ BEGIN
             USING access_level::public.app_permission;
     END IF;
 END $$;
+
+-- Recreate the policy with correct Enum comparison
+CREATE POLICY "Users can update assets" ON public.assets
+    FOR UPDATE
+    USING (
+        owner_id = auth.uid() OR
+        EXISTS (
+            SELECT 1 FROM public.access_grants
+            WHERE access_grants.asset_id = assets.id
+            AND access_grants.user_id = auth.uid()
+            AND access_grants.access_level = 'EDIT'::public.app_permission
+        )
+    );
 
 -- Ensure the unique constraint on (asset_id, user_id) exists
 DO $$
