@@ -43,7 +43,14 @@ describe('GET /api/airlock', () => {
   });
 
   it('returns data when request is valid', async () => {
-    const mockData = [{ id: '1', status: 'QUEUED' }];
+    const mockData = [{
+      id: '1',
+      status: 'QUEUED',
+      traffic_light: 'YELLOW',
+      confidence_score: 0.85,
+      ai_payload: { summary: 'test' },
+      created_at: '2023-01-01T00:00:00Z'
+    }];
     mockSupabase.order.mockResolvedValue({ data: mockData, error: null });
 
     const request = new Request('http://localhost:3000/api/airlock?asset_id=123', {
