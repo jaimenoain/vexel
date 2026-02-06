@@ -28,7 +28,7 @@ export interface Entity {
   assets: Asset[];
 }
 
-export type AirlockStatus = 'QUEUED' | 'PROCESSING' | 'REVIEW_NEEDED' | 'READY_TO_COMMIT';
+export type AirlockStatus = 'QUEUED' | 'PROCESSING' | 'REVIEW_NEEDED' | 'READY_TO_COMMIT' | 'ERROR';
 export type TrafficLight = 'RED' | 'YELLOW' | 'GREEN';
 
 export interface AirlockItem {

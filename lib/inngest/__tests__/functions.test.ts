@@ -1,66 +1,153 @@
-import { updateItemStatus } from '../functions';
-import { supabase } from '../../supabase';
+import { updateItemStatus, processDocumentHandler } from '../functions';
+import { supabaseAdmin } from '../../supabase-admin';
+import { ParserFactory } from '../../ai/factory';
 
-// Mock supabase client
-jest.mock('../../supabase', () => {
-  const mockSelect = jest.fn();
-  const mockEq = jest.fn();
-  const mockUpdate = jest.fn();
+// Mock dependencies
+jest.mock('../../supabase-admin', () => {
+    // Helper to create a chainable mock
+    const createChain = () => {
+        const chain: any = {
+            data: null,
+            error: null
+        };
+        chain.update = jest.fn().mockReturnValue(chain);
+        chain.eq = jest.fn().mockReturnValue(chain);
+        chain.select = jest.fn().mockReturnValue(chain);
+        chain.single = jest.fn().mockReturnValue(chain);
+        chain.maybeSingle = jest.fn();
+        chain.download = jest.fn();
+        chain.from = jest.fn().mockReturnValue(chain);
+        chain.storage = {
+            from: jest.fn().mockReturnValue(chain)
+        };
+        return chain;
+    };
 
-  // Chain setup
-  const mockChain = {
-      update: mockUpdate,
-      eq: mockEq,
-      select: mockSelect
-  };
+    const mockInstance = createChain();
 
-  // Make methods return the chain
-  mockUpdate.mockReturnValue(mockChain);
-  mockEq.mockReturnValue(mockChain);
-
-  return {
-    supabase: {
-      from: jest.fn(() => mockChain),
-    },
-  };
+    return {
+        supabaseAdmin: {
+            from: jest.fn(() => mockInstance),
+            storage: {
+                from: jest.fn(() => mockInstance)
+            }
+        }
+    };
 });
 
-describe('updateItemStatus', () => {
-  it('should call supabase update with correct parameters', async () => {
-    // Setup mock return
-    const mockSelect = supabase.from('airlock_items').update({}).eq('', '').select as jest.Mock;
-    mockSelect.mockResolvedValue({
-      data: [{ id: '1' }],
-      error: null,
+jest.mock('../../ai/factory', () => ({
+    ParserFactory: {
+        getParser: jest.fn()
+    }
+}));
+
+describe('Airlock Inngest Functions', () => {
+    let mockChain: any;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        // Access the mock chain
+        mockChain = (supabaseAdmin.from as jest.Mock)();
+
+        // Reset properties
+        mockChain.error = null;
+        mockChain.data = null;
+
+        // Reset specific method behaviors
+        mockChain.maybeSingle.mockResolvedValue({ data: { id: 'item-123' }, error: null });
+        mockChain.download.mockResolvedValue({
+            data: { arrayBuffer: async () => new ArrayBuffer(8) },
+            error: null
+        });
+
+        // Mock Parser
+        (ParserFactory.getParser as jest.Mock).mockReturnValue({
+            parse: jest.fn().mockResolvedValue([{ some: 'data' }])
+        });
     });
 
-    await updateItemStatus('asset-123', 'file.pdf', 'PROCESSING');
+    describe('updateItemStatus', () => {
+        it('should update status using supabaseAdmin', async () => {
+            await updateItemStatus('item-123', 'PROCESSING');
 
-    expect(supabase.from).toHaveBeenCalledWith('airlock_items');
+            expect(supabaseAdmin.from).toHaveBeenCalledWith('airlock_items');
+            expect(mockChain.update).toHaveBeenCalledWith({ status: 'PROCESSING' });
+            expect(mockChain.eq).toHaveBeenCalledWith('id', 'item-123');
+        });
 
-    // Check update call
-    // access the chain object implicitly via the mock calls
-    // It's easier to check if the mocked function was called.
-    const mockChain = (supabase.from as jest.Mock).mock.results[0].value;
+        it('should include error message if provided', async () => {
+            await updateItemStatus('item-123', 'ERROR', 'Something went wrong');
 
-    expect(mockChain.update).toHaveBeenCalledWith({ status: 'PROCESSING' });
-    expect(mockChain.eq).toHaveBeenCalledWith('asset_id', 'asset-123');
-    expect(mockChain.eq).toHaveBeenCalledWith('file_path', 'file.pdf');
-    expect(mockChain.select).toHaveBeenCalled();
-  });
-
-  it('should log warning if no items found', async () => {
-    const mockSelect = supabase.from('airlock_items').update({}).eq('', '').select as jest.Mock;
-    mockSelect.mockResolvedValue({
-      data: [],
-      error: null,
+            expect(mockChain.update).toHaveBeenCalledWith({
+                status: 'ERROR',
+                ai_payload: { error: 'Something went wrong' }
+            });
+        });
     });
 
-    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    describe('processDocumentHandler', () => {
+        const mockStep = {
+            run: jest.fn(async (name, fn) => fn()) // Execute step immediately
+        };
+        const mockEvent = {
+            data: {
+                file_path: 'test.pdf',
+                asset_id: 'asset-1',
+                user_id: 'user-1'
+            }
+        };
 
-    await updateItemStatus('asset-123', 'file.pdf', 'PROCESSING');
+        it('should process successfully', async () => {
+            await processDocumentHandler({ event: mockEvent, step: mockStep } as any);
 
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('No airlock_items found'));
-    consoleSpy.mockRestore();
-  });
+            // 1. Resolve ID
+            expect(mockChain.maybeSingle).toHaveBeenCalled();
+
+            // 2. Update Processing
+            expect(mockChain.update).toHaveBeenCalledWith({ status: 'PROCESSING' });
+
+            // 3. Download
+            expect(supabaseAdmin.storage.from).toHaveBeenCalledWith('raw-documents');
+            expect(mockChain.download).toHaveBeenCalledWith('test.pdf');
+
+            // 4. Parse
+            expect(ParserFactory.getParser).toHaveBeenCalled();
+
+            // 5. Save Results
+            expect(mockChain.update).toHaveBeenCalledWith({
+                status: 'REVIEW_NEEDED',
+                ai_payload: { transactions: [{ some: 'data' }] }
+            });
+        });
+
+        it('should use provided airlock_item_id if available', async () => {
+            const eventWithId = {
+                data: { ...mockEvent.data, airlock_item_id: 'provided-id' }
+            };
+            await processDocumentHandler({ event: eventWithId, step: mockStep } as any);
+
+            expect(mockChain.maybeSingle).not.toHaveBeenCalled();
+            expect(mockChain.update).toHaveBeenCalledWith(expect.objectContaining({ status: 'PROCESSING' }));
+            expect(mockChain.eq).toHaveBeenCalledWith('id', 'provided-id');
+        });
+
+        it('should handle missing item', async () => {
+            mockChain.maybeSingle.mockResolvedValue({ data: null, error: null });
+
+            await expect(processDocumentHandler({ event: mockEvent, step: mockStep } as any))
+                .rejects.toThrow('No airlock_items found');
+        });
+
+        it('should handle download error', async () => {
+            mockChain.download.mockResolvedValue({ data: null, error: { message: 'S3 Error' } });
+
+            await processDocumentHandler({ event: mockEvent, step: mockStep } as any);
+
+            // Should catch and update status to ERROR
+            expect(mockChain.update).toHaveBeenCalledWith({
+                status: 'ERROR',
+                ai_payload: { error: expect.stringContaining('S3 Error') }
+            });
+        });
+    });
 });
