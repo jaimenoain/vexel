@@ -35,8 +35,8 @@ WITH CHECK (
         SELECT 1
         FROM public.access_grants
         WHERE user_id = auth.uid()
-        -- Extract Asset ID from path (safe because of regex check above)
-        AND asset_id = (split_part(name, '/', 1)::uuid)
+        -- Extract Asset ID from path (safe compare as text)
+        AND asset_id::text = split_part(name, '/', 1)
         AND permission_level IN ('EDITOR'::public.app_permission, 'OWNER'::public.app_permission)
     )
 );
@@ -44,7 +44,7 @@ WITH CHECK (
 -- 4. Policy: Allow View/Download (SELECT)
 -- Requirements:
 -- - Bucket: raw-documents
--- - Permission: User must be EDITOR or OWNER of the asset.
+-- - Permission: User must be READ_ONLY, EDITOR or OWNER of the asset.
 
 DROP POLICY IF EXISTS "Allow View for Authorized Users" ON storage.objects;
 
@@ -59,7 +59,7 @@ USING (
         SELECT 1
         FROM public.access_grants
         WHERE user_id = auth.uid()
-        AND asset_id = (split_part(name, '/', 1)::uuid)
-        AND permission_level IN ('EDITOR'::public.app_permission, 'OWNER'::public.app_permission)
+        AND asset_id::text = split_part(name, '/', 1)
+        AND permission_level IN ('READ_ONLY'::public.app_permission, 'EDITOR'::public.app_permission, 'OWNER'::public.app_permission)
     )
 );
