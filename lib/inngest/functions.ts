@@ -1,6 +1,8 @@
 import { inngest } from "./client";
 import { supabaseAdmin } from "../supabase-admin";
 import { ParserFactory } from "../ai/factory";
+import { gradeAirlockItem } from "../airlock/traffic-light";
+import { ExtractedData } from "../ai/types";
 import { Readable } from "stream";
 
 // Define the event type
@@ -87,11 +89,24 @@ export const processDocumentHandler = async ({ event, step }: { event: DocumentU
     });
 
     await step.run("save-results", async () => {
+      // Calculate aggregate confidence score
+      let confidenceScore = 0;
+      if (Array.isArray(extractionData) && extractionData.length > 0) {
+        const totalConfidence = extractionData.reduce((sum: number, item: ExtractedData) => sum + item.confidence, 0);
+        confidenceScore = totalConfidence / extractionData.length;
+      }
+
+      // Determine Traffic Light status
+      const payload = { transactions: extractionData };
+      const trafficLightStatus = gradeAirlockItem(payload, confidenceScore);
+
       const { error } = await supabaseAdmin
         .from('airlock_items')
         .update({
           status: 'REVIEW_NEEDED',
-          ai_payload: { transactions: extractionData }
+          ai_payload: payload,
+          confidence_score: confidenceScore,
+          traffic_light: trafficLightStatus
         })
         .eq('id', resolvedItemId);
 

@@ -1,6 +1,7 @@
 import { processDocumentHandler } from '../functions';
 import { supabaseAdmin } from '../../supabase-admin';
 import { ParserFactory } from '../../ai/factory';
+import { gradeAirlockItem } from '../../airlock/traffic-light';
 
 // Mock dependencies
 jest.mock('../../supabase-admin', () => ({
@@ -16,6 +17,10 @@ jest.mock('../../ai/factory', () => ({
   ParserFactory: {
     getParser: jest.fn(),
   },
+}));
+
+jest.mock('../../airlock/traffic-light', () => ({
+  gradeAirlockItem: jest.fn(),
 }));
 
 describe('processDocumentHandler', () => {
@@ -88,6 +93,9 @@ describe('processDocumentHandler', () => {
     ];
     mockParser.parse.mockResolvedValue(expectedExtraction);
 
+    // Setup TrafficLight mock
+    (gradeAirlockItem as jest.Mock).mockReturnValue('GREEN');
+
     // Execute
     const result = await processDocumentHandler({ event: mockEvent as any, step: mockStep as any });
 
@@ -96,16 +104,15 @@ describe('processDocumentHandler', () => {
     expect(result.itemId).toBe('item-123');
 
     // Check status updates
-    // We need to check what was passed to update().
-    // Since mockUpdate returns an object with eq(), we check mockUpdate.calls
-
     // First update: PROCESSING
     expect(mockUpdate).toHaveBeenCalledWith({ status: 'PROCESSING' });
 
-    // Second update: REVIEW_NEEDED with payload
+    // Second update: REVIEW_NEEDED with payload and traffic light info
     expect(mockUpdate).toHaveBeenCalledWith({
       status: 'REVIEW_NEEDED',
       ai_payload: { transactions: expectedExtraction },
+      confidence_score: 0.9,
+      traffic_light: 'GREEN'
     });
 
     // Check that we targeted the correct ID
@@ -118,6 +125,12 @@ describe('processDocumentHandler', () => {
     // Check parser
     expect(ParserFactory.getParser).toHaveBeenCalled();
     expect(mockParser.parse).toHaveBeenCalled();
+
+    // Check traffic light grading was called
+    expect(gradeAirlockItem).toHaveBeenCalledWith(
+      { transactions: expectedExtraction },
+      0.9 // Avg of 0.9 is 0.9
+    );
   });
 
   it('should handle file not found error and update status to ERROR', async () => {
