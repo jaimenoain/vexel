@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Trash2, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import { ExtractedData } from '@/lib/ai/types';
+import { useTransactionValidator } from '@/src/hooks/useTransactionValidator';
+import { SimpleToast } from '@/src/components/common/SimpleToast';
 
 export interface TransactionRow extends Omit<ExtractedData, 'amount'> {
   id: string; // Unique ID for React keys
@@ -12,6 +14,7 @@ export interface TransactionRow extends Omit<ExtractedData, 'amount'> {
 
 interface TransactionEditorProps {
   initialData: { transactions: ExtractedData[] } | Record<string, any> | null;
+  confidence?: number;
   onSave?: (data: any) => void;
   onChange?: (data: TransactionRow[]) => void;
 }
@@ -32,13 +35,25 @@ const initializeRows = (data: TransactionEditorProps['initialData']): Transactio
     return [];
 };
 
-export function TransactionEditor({ initialData, onSave, onChange }: TransactionEditorProps) {
+export function TransactionEditor({ initialData, confidence = 0, onSave, onChange }: TransactionEditorProps) {
   const [rows, setRows] = useState<TransactionRow[]>(() => initializeRows(initialData));
+  const [isEdited, setIsEdited] = useState(false);
+  const { status, errors } = useTransactionValidator(rows, confidence, isEdited);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   // Notify parent of changes
-  React.useEffect(() => {
+  useEffect(() => {
     onChange?.(rows);
   }, [rows, onChange]);
+
+  // Handle Validation Feedback
+  useEffect(() => {
+    if (status === 'RED' && isEdited) {
+      setToastMessage(errors[0] || 'Validation failed');
+      setShowToast(true);
+    }
+  }, [status, isEdited, errors]);
 
   const handleAddSplit = () => {
     const newRow: TransactionRow = {
@@ -51,10 +66,12 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
       confidence: 1.0, // Manual entry implies high confidence
     };
     setRows([...rows, newRow]);
+    setIsEdited(true);
   };
 
   const handleRemove = (id: string) => {
     setRows(rows.filter(row => row.id !== id));
+    setIsEdited(true);
   };
 
   const handleChange = (id: string, field: keyof TransactionRow, value: any) => {
@@ -64,6 +81,7 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
       }
       return row;
     }));
+    setIsEdited(true);
   };
 
   const net = rows.reduce((sum, r) => {
@@ -71,10 +89,48 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
       return sum + (isNaN(val) ? 0 : val);
   }, 0);
 
+  const StatusBadge = () => {
+    let color = 'bg-gray-100 text-gray-800 border-gray-200';
+    let Icon = CheckCircle;
+    let text = 'Unknown';
+
+    if (status === 'GREEN') {
+      color = 'bg-green-100 text-green-800 border-green-200';
+      Icon = CheckCircle;
+      text = 'Valid';
+    } else if (status === 'YELLOW') {
+      color = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      Icon = AlertTriangle;
+      text = 'Review Needed';
+    } else if (status === 'RED') {
+      color = 'bg-red-100 text-red-800 border-red-200';
+      Icon = AlertCircle;
+      text = 'Error';
+    }
+
+    return (
+      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${color}`}>
+        <Icon size={14} />
+        <span>{text}</span>
+      </div>
+    );
+  };
+
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className={`h-full flex flex-col bg-white relative ${status === 'RED' && isEdited ? 'shake' : ''}`}>
+      {showToast && (
+        <SimpleToast
+          message={toastMessage}
+          type="error"
+          onClose={() => setShowToast(false)}
+        />
+      )}
+
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">Transaction Editor</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold">Transaction Editor</h2>
+          <StatusBadge />
+        </div>
         <button
           onClick={handleAddSplit}
           className="flex items-center gap-2 text-sm font-medium bg-black text-white px-3 py-1.5 hover:bg-gray-800 transition-colors"
