@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { ExtractedData } from '@/lib/ai/types';
 
-interface TransactionRow extends Omit<ExtractedData, 'amount'> {
+export interface TransactionRow extends Omit<ExtractedData, 'amount'> {
   id: string; // Unique ID for React keys
   category?: string;
   amount: string | number;
@@ -13,6 +13,7 @@ interface TransactionRow extends Omit<ExtractedData, 'amount'> {
 interface TransactionEditorProps {
   initialData: { transactions: ExtractedData[] } | Record<string, any> | null;
   onSave?: (data: any) => void;
+  onChange?: (data: TransactionRow[]) => void;
 }
 
 const initializeRows = (data: TransactionEditorProps['initialData']): TransactionRow[] => {
@@ -31,8 +32,13 @@ const initializeRows = (data: TransactionEditorProps['initialData']): Transactio
     return [];
 };
 
-export function TransactionEditor({ initialData, onSave }: TransactionEditorProps) {
+export function TransactionEditor({ initialData, onSave, onChange }: TransactionEditorProps) {
   const [rows, setRows] = useState<TransactionRow[]>(() => initializeRows(initialData));
+
+  // Notify parent of changes
+  React.useEffect(() => {
+    onChange?.(rows);
+  }, [rows, onChange]);
 
   const handleAddSplit = () => {
     const newRow: TransactionRow = {

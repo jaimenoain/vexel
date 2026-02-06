@@ -7,6 +7,8 @@ import { PdfViewer } from '@/src/components/airlock/PdfViewer';
 import { TransactionEditor } from '@/src/components/airlock/TransactionEditor';
 import { useAuth } from '@/app/context/AuthContext';
 import { AirlockItem } from '@/lib/types';
+import { AirlockMobileList } from '@/src/components/airlock/AirlockMobileList';
+import { AirlockMobileModal } from '@/src/components/airlock/AirlockMobileModal';
 
 interface AirlockItemWithUrl extends AirlockItem {
   url: string | null;
@@ -16,10 +18,32 @@ export default function AirlockPage() {
   const params = useParams();
   const id = params?.id as string;
   const { session, loading: authLoading } = useAuth();
+
+  // Existing state
   const [item, setItem] = useState<AirlockItemWithUrl | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // New state
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileItems, setMobileItems] = useState<AirlockItem[]>([]);
+  const [selectedItem, setSelectedItem] = useState<AirlockItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Detect Mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Fetch Item (Existing Logic)
   useEffect(() => {
     if (authLoading) return;
     if (!session) {
@@ -53,6 +77,55 @@ export default function AirlockPage() {
     }
   }, [id, session, authLoading]);
 
+  // Fetch Mobile Queue (List)
+  useEffect(() => {
+    if (!isMobile || !item?.asset_id || !session) return;
+
+    const fetchQueue = async () => {
+      try {
+        const res = await fetch(`/api/airlock?asset_id=${item.asset_id}`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setMobileItems(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch queue:', err);
+      }
+    };
+
+    fetchQueue();
+  }, [isMobile, item?.asset_id, session]);
+
+  const handleItemClick = (clickedItem: AirlockItem) => {
+    setSelectedItem(clickedItem);
+    setIsModalOpen(true);
+  };
+
+  const handleModalSave = async (data: any) => {
+    console.log('Saving data:', data);
+    // TODO: Implement actual save logic (PUT /api/airlock/[id])
+    // Mock save delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Update local state (optimistic update)
+    if (selectedItem) {
+        const updatedItem = {
+            ...selectedItem,
+            ai_payload: { transactions: data }
+        };
+        // Update item in list
+        setMobileItems(prev => prev.map(i => i.id === selectedItem.id ? updatedItem : i));
+        // Update current item if it's the one we're viewing
+        if (item?.id === selectedItem.id) {
+            setItem(prev => prev ? { ...prev, ai_payload: { transactions: data } } : null);
+        }
+    }
+  };
+
   if (loading || authLoading) {
     return (
       <Shell>
@@ -69,6 +142,24 @@ export default function AirlockPage() {
         <div className="flex items-center justify-center h-full text-red-500">
           <p>Error: {error}</p>
         </div>
+      </Shell>
+    );
+  }
+
+  // Render Mobile View
+  if (isMobile) {
+    return (
+      <Shell>
+        <AirlockMobileList
+          items={mobileItems}
+          onItemClick={handleItemClick}
+        />
+        <AirlockMobileModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          item={selectedItem}
+          onSave={handleModalSave}
+        />
       </Shell>
     );
   }
