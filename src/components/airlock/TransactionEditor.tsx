@@ -88,7 +88,7 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-2">
             {/* Header Row */}
-            <div className="grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">
+            <div className="hidden md:grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">
                 <div className="col-span-3">Date</div>
                 <div className="col-span-4">Description</div>
                 <div className="col-span-2 text-right">Amount</div>
@@ -97,8 +97,8 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
             </div>
 
             {rows.map((row) => (
-            <div key={row.id} className="grid grid-cols-12 gap-2 items-center bg-white border border-gray-200 p-2 hover:border-gray-400 transition-colors group">
-                <div className="col-span-3">
+            <div key={row.id} className="flex flex-col md:grid md:grid-cols-12 gap-2 items-start md:items-center bg-white border border-gray-200 p-4 md:p-2 hover:border-gray-400 transition-colors group">
+                <div className="w-full md:col-span-3">
                 <input
                     type="date"
                     value={row.date as string}
@@ -107,7 +107,7 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
                     aria-label="Date"
                 />
                 </div>
-                <div className="col-span-4">
+                <div className="w-full md:col-span-4">
                 <input
                     type="text"
                     value={row.description}
@@ -117,17 +117,18 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
                     aria-label="Description"
                 />
                 </div>
-                <div className="col-span-2">
+                <div className="w-full md:col-span-2">
                 <input
                     type="number"
                     value={row.amount}
                     onChange={(e) => handleChange(row.id, 'amount', e.target.value)}
-                    className="w-full text-sm font-mono text-right border-none focus:ring-0 p-0 bg-transparent outline-none"
+                    className="w-full text-sm font-mono text-left md:text-right border-none focus:ring-0 p-0 bg-transparent outline-none"
                     step="0.01"
                     aria-label="Amount"
+                    placeholder="0.00"
                 />
                 </div>
-                <div className="col-span-2">
+                <div className="w-full md:col-span-2">
                 <input
                     type="text"
                     value={row.category || ''}
@@ -137,7 +138,7 @@ export function TransactionEditor({ initialData, onSave, onChange }: Transaction
                     aria-label="Category"
                 />
                 </div>
-                <div className="col-span-1 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-full flex justify-end md:col-span-1 md:justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <button
                     onClick={() => handleRemove(row.id)}
                     className="text-gray-400 hover:text-red-500 transition-colors p-1"
