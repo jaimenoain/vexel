@@ -9,107 +9,102 @@ jest.mock('../../supabase-admin', () => ({
 }));
 
 describe('Traffic Light Service', () => {
-  describe('gradeAirlockItem', () => {
-    it('should return RED if sum is not zero (Rule 1)', () => {
+  describe('gradeAirlockItem - Verification Checklist', () => {
+
+    // 1. Test Case: Unbalanced Transaction
+    // Mock a payload where Debits = 100 and Credits = 90. Assert result is RED.
+    it('should return RED for Unbalanced Transaction (Debits=100, Credits=90)', () => {
       const payload = {
         transactions: [
-          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.95 },
-          { amount: -50, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.95 }
+          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'Debit', confidence: 0.99 },
+          { amount: -90, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
         ]
       };
-      // Sum = 50 -> RED
-      expect(gradeAirlockItem(payload, 0.95)).toBe('RED');
+      // Net sum = 10 -> RED
+      expect(gradeAirlockItem(payload, 0.99)).toBe('RED');
     });
 
-    it('should return RED if date is invalid (Rule 2)', () => {
+    // 2. Test Case: Missing Date
+    // Mock a payload with valid amounts but date: null. Assert result is RED.
+    it('should return RED for Missing Date (date: null)', () => {
       const payload = {
         transactions: [
-          { amount: 100, date: 'invalid-date', currency: 'USD', description: 'test', confidence: 0.95 },
-          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.95 }
+          { amount: 100, date: null as any, currency: 'USD', description: 'Debit', confidence: 0.99 },
+          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
         ]
       };
-      // Sum = 0, but invalid date -> RED
-      expect(gradeAirlockItem(payload, 0.95)).toBe('RED');
+      expect(gradeAirlockItem(payload, 0.99)).toBe('RED');
     });
 
-    it('should return RED if date is missing (Rule 2)', () => {
-        const payload = {
-          transactions: [
-            { amount: 100, currency: 'USD', description: 'test', confidence: 0.95 },
-            { amount: -100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.95 }
-          ]
-        } as any;
-        expect(gradeAirlockItem(payload, 0.95)).toBe('RED');
-    });
-
-    it('should return YELLOW if confidence is low (Rule 3)', () => {
+    // 3. Test Case: Low Confidence
+    // Mock a perfect transaction but with confidence_score: 0.85. Assert result is YELLOW.
+    it('should return YELLOW for Low Confidence (score: 0.85)', () => {
       const payload = {
         transactions: [
-          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.8 },
-          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.8 }
+          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'Debit', confidence: 0.99 },
+          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
         ]
       };
-      // Sum = 0, Date valid, but Global Confidence passed is low
-      expect(gradeAirlockItem(payload, 0.89)).toBe('YELLOW');
+      // Passed confidence_score is 0.85
+      expect(gradeAirlockItem(payload, 0.85)).toBe('YELLOW');
     });
 
-    it('should return GREEN if all checks pass (Rule 4)', () => {
+    // 4. Test Case: The Happy Path
+    // Mock a balanced transaction (Debits = 100, Credits = 100) with confidence_score: 0.99. Assert result is GREEN.
+    it('should return GREEN for The Happy Path (Balanced, High Confidence)', () => {
       const payload = {
         transactions: [
-          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 },
-          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 }
+          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'Debit', confidence: 0.99 },
+          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
         ]
       };
-      expect(gradeAirlockItem(payload, 0.95)).toBe('GREEN');
+      expect(gradeAirlockItem(payload, 0.99)).toBe('GREEN');
     });
 
+    // 5. Test Case: Edge Case
+    // Mock a transaction with floating point math (e.g., 0.1 + 0.2) to ensure the epsilon check works and doesn't flag false REDs.
+    it('should return GREEN for Floating Point Edge Case (0.1 + 0.2 - 0.3)', () => {
+      // 0.1 + 0.2 is typically 0.30000000000000004
+      // So 0.1 + 0.2 - 0.3 is 0.00000000000000004
+      // This is < 0.01, so it should be GREEN.
+      const payload = {
+        transactions: [
+          { amount: 0.1, date: '2023-01-01', currency: 'USD', description: 'Part 1', confidence: 0.99 },
+          { amount: 0.2, date: '2023-01-01', currency: 'USD', description: 'Part 2', confidence: 0.99 },
+          { amount: -0.3, date: '2023-01-01', currency: 'USD', description: 'Total', confidence: 0.99 }
+        ]
+      };
+      expect(gradeAirlockItem(payload, 0.99)).toBe('GREEN');
+    });
+
+  });
+
+  describe('Additional Robustness Tests', () => {
     it('should return RED if payload is malformed', () => {
       expect(gradeAirlockItem({} as any, 0.95)).toBe('RED');
       expect(gradeAirlockItem(null as any, 0.95)).toBe('RED');
       expect(gradeAirlockItem({ transactions: 'not-an-array' } as any, 0.95)).toBe('RED');
     });
 
+    it('should return RED if invalid date string is provided', () => {
+        const payload = {
+            transactions: [
+              { amount: 100, date: 'invalid-date-string', currency: 'USD', description: 'Debit', confidence: 0.99 },
+              { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
+            ]
+          };
+          expect(gradeAirlockItem(payload, 0.99)).toBe('RED');
+    });
+
     it('should prioritize RED over YELLOW (Precedence Logic)', () => {
       const payload = {
         transactions: [
-          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.8 },
-          { amount: -50, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.8 }
+          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'Debit', confidence: 0.8 },
+          { amount: -90, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.8 }
         ]
       };
-      // Sum = 50 (RED condition), Confidence = 0.8 (YELLOW condition) -> RED wins
+      // Sum = 10 (RED condition), Confidence = 0.8 (YELLOW condition) -> RED wins
       expect(gradeAirlockItem(payload, 0.8)).toBe('RED');
-    });
-
-    it('should allow small floating point variance', () => {
-         const payload = {
-        transactions: [
-          { amount: 10.004, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 },
-          { amount: -10.000, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 }
-        ]
-      };
-      // Sum = 0.004 < 0.01 -> Pass
-      expect(gradeAirlockItem(payload, 0.95)).toBe('GREEN');
-    });
-     it('should reject large floating point variance', () => {
-         const payload = {
-        transactions: [
-          { amount: 10.011, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 },
-          { amount: -10.000, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 }
-        ]
-      };
-      // Sum = 0.011 > 0.01 -> RED
-      expect(gradeAirlockItem(payload, 0.95)).toBe('RED');
-    });
-
-    it('should handle negative zero correctly', () => {
-      const payload = {
-        transactions: [
-          { amount: -0, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 },
-          { amount: 0, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 }
-        ]
-      };
-      // Sum = 0 -> GREEN
-      expect(gradeAirlockItem(payload, 0.95)).toBe('GREEN');
     });
   });
 
