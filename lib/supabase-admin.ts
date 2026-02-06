@@ -1,15 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables for Admin Client');
-}
+let client: SupabaseClient | null = null;
 
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
+// Proxy pattern to allow import without keys, but throw on usage
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+  get: (_target, prop) => {
+    if (!client) {
+        if (!supabaseUrl || !supabaseServiceKey) {
+            throw new Error('Missing Supabase environment variables for Admin Client');
+        }
+        client = createClient(supabaseUrl, supabaseServiceKey, {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+            },
+        });
+    }
+    return (client as any)[prop];
+  }
 });
