@@ -69,6 +69,17 @@ describe('Traffic Light Service', () => {
       expect(gradeAirlockItem({ transactions: 'not-an-array' } as any, 0.95)).toBe('RED');
     });
 
+    it('should prioritize RED over YELLOW (Precedence Logic)', () => {
+      const payload = {
+        transactions: [
+          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.8 },
+          { amount: -50, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.8 }
+        ]
+      };
+      // Sum = 50 (RED condition), Confidence = 0.8 (YELLOW condition) -> RED wins
+      expect(gradeAirlockItem(payload, 0.8)).toBe('RED');
+    });
+
     it('should allow small floating point variance', () => {
          const payload = {
         transactions: [
@@ -88,6 +99,17 @@ describe('Traffic Light Service', () => {
       };
       // Sum = 0.011 > 0.01 -> RED
       expect(gradeAirlockItem(payload, 0.95)).toBe('RED');
+    });
+
+    it('should handle negative zero correctly', () => {
+      const payload = {
+        transactions: [
+          { amount: -0, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 },
+          { amount: 0, date: '2023-01-01', currency: 'USD', description: 'test', confidence: 0.99 }
+        ]
+      };
+      // Sum = 0 -> GREEN
+      expect(gradeAirlockItem(payload, 0.95)).toBe('GREEN');
     });
   });
 
