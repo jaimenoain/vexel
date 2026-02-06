@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Shell } from '@/src/components/layout/Shell';
 import { PdfViewer } from '@/src/components/airlock/PdfViewer';
+import { TransactionEditor } from '@/src/components/airlock/TransactionEditor';
 import { useAuth } from '@/app/context/AuthContext';
 import { AirlockItem } from '@/lib/types';
 
@@ -82,12 +83,12 @@ export default function AirlockPage() {
 
         {/* Right Pane - Editor Placeholder */}
         <div className="w-full md:w-1/2 h-full bg-white border border-[#E5E5E5] p-6 relative">
-          <h2 className="text-xl font-bold mb-4">Data Editor</h2>
-          <div className="text-gray-400">
-            Editor placeholder for item {id}
-          </div>
-          {/* Debug info */}
-          <div className="mt-4 text-xs text-gray-300 overflow-hidden">
+          <TransactionEditor
+            key={item?.id ?? 'loading'}
+            initialData={item?.ai_payload ?? null}
+          />
+          {/* Debug info - Optional, kept for visibility */}
+          <div className="absolute bottom-2 right-2 text-xs text-gray-300">
              Confidence: {item?.confidence_score}
           </div>
         </div>
