@@ -1,6 +1,7 @@
 import { updateItemStatus, processDocumentHandler } from '../functions';
 import { supabaseAdmin } from '../../supabase-admin';
 import { ParserFactory } from '../../ai/factory';
+import { gradeAirlockItem } from '../../airlock/traffic-light';
 
 // Mock dependencies
 jest.mock('../../supabase-admin', () => {
@@ -41,6 +42,10 @@ jest.mock('../../ai/factory', () => ({
     }
 }));
 
+jest.mock('../../airlock/traffic-light', () => ({
+    gradeAirlockItem: jest.fn()
+}));
+
 describe('Airlock Inngest Functions', () => {
     let mockChain: any;
 
@@ -62,8 +67,11 @@ describe('Airlock Inngest Functions', () => {
 
         // Mock Parser
         (ParserFactory.getParser as jest.Mock).mockReturnValue({
-            parse: jest.fn().mockResolvedValue([{ some: 'data' }])
+            parse: jest.fn().mockResolvedValue([{ some: 'data', confidence: 0.8 }])
         });
+
+        // Mock Traffic Light
+        (gradeAirlockItem as jest.Mock).mockReturnValue('YELLOW');
     });
 
     describe('updateItemStatus', () => {
@@ -116,8 +124,15 @@ describe('Airlock Inngest Functions', () => {
             // 5. Save Results
             expect(mockChain.update).toHaveBeenCalledWith({
                 status: 'REVIEW_NEEDED',
-                ai_payload: { transactions: [{ some: 'data' }] }
+                ai_payload: { transactions: [{ some: 'data', confidence: 0.8 }] },
+                confidence_score: 0.8,
+                traffic_light: 'YELLOW'
             });
+
+            expect(gradeAirlockItem).toHaveBeenCalledWith(
+                { transactions: [{ some: 'data', confidence: 0.8 }] },
+                0.8
+            );
         });
 
         it('should use provided airlock_item_id if available', async () => {
