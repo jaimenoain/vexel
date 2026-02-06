@@ -27,3 +27,17 @@ export interface Entity {
   type: EntityType;
   assets: Asset[];
 }
+
+export type AirlockStatus = 'QUEUED' | 'PROCESSING' | 'REVIEW_NEEDED' | 'READY_TO_COMMIT';
+export type TrafficLight = 'RED' | 'YELLOW' | 'GREEN';
+
+export interface AirlockItem {
+  id: string;
+  asset_id: string;
+  file_path: string;
+  status: AirlockStatus;
+  ai_payload: Record<string, any>;
+  confidence_score: number | null;
+  traffic_light: TrafficLight | null;
+  created_at: string;
+}
