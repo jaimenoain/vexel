@@ -5,9 +5,11 @@ import { AirlockMobileCard } from './AirlockMobileCard';
 interface AirlockMobileListProps {
   items: AirlockItem[];
   onItemClick: (item: AirlockItem) => void;
+  onApprove: (id: string) => Promise<void>;
+  onRemove: (id: string) => void;
 }
 
-export function AirlockMobileList({ items, onItemClick }: AirlockMobileListProps) {
+export function AirlockMobileList({ items, onItemClick, onApprove, onRemove }: AirlockMobileListProps) {
   if (!items || items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-gray-500">
@@ -23,6 +25,8 @@ export function AirlockMobileList({ items, onItemClick }: AirlockMobileListProps
           key={item.id}
           item={item}
           onClick={() => onItemClick(item)}
+          onApprove={onApprove}
+          onRemove={onRemove}
         />
       ))}
     </div>
