@@ -126,6 +126,27 @@ export default function AirlockPage() {
     }
   };
 
+  const handleApproveItem = async (itemId: string) => {
+    if (!session) return;
+    const res = await fetch('/api/airlock/commit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ id: itemId }),
+    });
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to approve item');
+    }
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    setMobileItems((prev) => prev.filter((i) => i.id !== itemId));
+  };
+
   if (loading || authLoading) {
     return (
       <Shell>
@@ -153,6 +174,8 @@ export default function AirlockPage() {
         <AirlockMobileList
           items={mobileItems}
           onItemClick={handleItemClick}
+          onApprove={handleApproveItem}
+          onRemove={handleRemoveItem}
         />
         <AirlockMobileModal
           isOpen={isModalOpen}

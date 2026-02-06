@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AirlockItem, TrafficLight } from '@/lib/types';
+import { Check, Loader2 } from 'lucide-react';
 
 interface AirlockMobileCardProps {
   item: AirlockItem;
   onClick: () => void;
+  onApprove: (id: string) => Promise<void>;
+  onRemove: (id: string) => void;
 }
 
 const getStatusColor = (status: TrafficLight | null) => {
@@ -44,16 +47,41 @@ const getDate = (item: AirlockItem): string => {
   return '';
 };
 
-export function AirlockMobileCard({ item, onClick }: AirlockMobileCardProps) {
+export function AirlockMobileCard({ item, onClick, onApprove, onRemove }: AirlockMobileCardProps) {
+  const [isApproving, setIsApproving] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+
   const statusColor = getStatusColor(item.traffic_light);
   const vendor = getVendorName(item);
   const amount = getAmount(item);
   const date = getDate(item);
 
+  const handleApproveClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isApproving || item.traffic_light === 'RED') return;
+
+    setIsApproving(true);
+    try {
+      await onApprove(item.id);
+      setIsExiting(true);
+      // Wait for animation to complete before removing from list
+      setTimeout(() => {
+        onRemove(item.id);
+      }, 300);
+    } catch (error) {
+      console.error('Approve failed', error);
+      setIsApproving(false);
+    }
+  };
+
+  const isActionable = item.traffic_light !== 'RED';
+
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3 active:scale-[0.98] transition-transform cursor-pointer"
+      className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3 active:scale-[0.98] transition-all duration-300 ease-in-out cursor-pointer ${
+        isExiting ? 'opacity-0 translate-x-full' : 'opacity-100 translate-x-0'
+      }`}
     >
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-semibold text-gray-900 truncate pr-2">{vendor}</h3>
@@ -64,10 +92,27 @@ export function AirlockMobileCard({ item, onClick }: AirlockMobileCardProps) {
         <span className="font-mono font-medium text-gray-900">{amount}</span>
       </div>
 
-      <div className="flex justify-start">
+      <div className="flex justify-between items-center">
         <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${statusColor}`}>
           {item.traffic_light || 'PENDING'}
         </span>
+
+        <button
+          onClick={handleApproveClick}
+          disabled={!isActionable || isApproving}
+          className={`
+            w-8 h-8 rounded-full flex items-center justify-center transition-colors
+            ${
+              !isActionable
+                ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                : 'bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300'
+            }
+          `}
+          aria-label="Approve"
+          title={!isActionable ? "Cannot approve items with RED status" : "Approve"}
+        >
+          {isApproving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+        </button>
       </div>
     </div>
   );
