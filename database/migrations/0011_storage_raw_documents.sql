@@ -6,8 +6,10 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('raw-documents', 'raw-documents', false)
 ON CONFLICT (id) DO NOTHING;
 
--- 2. Enable RLS on storage.objects (Ensure it is enabled)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- 2. (Skipped) Enable RLS on storage.objects
+-- RLS is enabled by default on Supabase Storage. Explicitly running ALTER TABLE requires table ownership
+-- which the migration user might not have.
+-- ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
 -- 3. Policy: Allow Uploads (INSERT)
 -- Requirements:
