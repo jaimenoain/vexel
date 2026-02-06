@@ -54,7 +54,7 @@ export function ContextSwitcher() {
   }, []);
 
   const getLabel = () => {
-    if (selectedScope.type === 'GLOBAL') return 'Global Position';
+    if (selectedScope.type === 'GLOBAL') return 'Global View';
     return selectedScope.name;
   };
 
@@ -62,7 +62,7 @@ export function ContextSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-zinc-900 bg-white border border-zinc-200 rounded-md hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-200 dark:bg-black dark:text-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#111111] bg-[#FFFFFF] border border-[#E5E5E5] rounded-[4px] hover:bg-[#F5F5F5] focus:outline-none focus:ring-1 focus:ring-[#E5E5E5]"
       >
         <span>{getLabel()}</span>
         <svg
@@ -82,27 +82,27 @@ export function ContextSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 z-50 w-64 mt-1 bg-white border border-zinc-200 rounded-md shadow-lg dark:bg-black dark:border-zinc-800 max-h-96 overflow-y-auto">
+        <div className="absolute left-0 z-50 w-64 mt-1 bg-[#FFFFFF] border border-[#E5E5E5] rounded-[4px] max-h-96 overflow-y-auto">
           <div className="py-1">
             <button
               onClick={() => {
                 setSelectedScope({ type: 'GLOBAL' });
                 setIsOpen(false);
               }}
-              className={`w-full px-4 py-2 text-sm text-left hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
-                selectedScope.type === 'GLOBAL' ? 'font-semibold bg-zinc-50 dark:bg-zinc-900' : ''
+              className={`w-full px-4 py-2 text-sm text-left hover:bg-[#F5F5F5] text-[#111111] ${
+                selectedScope.type === 'GLOBAL' ? 'font-semibold bg-[#F5F5F5]' : ''
               }`}
             >
-              Global Position
+              Global View
             </button>
 
-            {loading && <div className="px-4 py-2 text-sm text-zinc-500">Loading...</div>}
+            {loading && <div className="px-4 py-2 text-sm text-[#111111]">Loading...</div>}
             {error && <div className="px-4 py-2 text-sm text-red-500">Error loading data</div>}
 
             {directoryData.map((entity) => (
               <div key={entity.id}>
                 <div
-                    className="px-4 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider mt-2"
+                    className="px-4 py-2 text-xs font-semibold text-[#111111] uppercase tracking-wider mt-2 opacity-50"
                 >
                   {entity.name}
                 </div>
@@ -112,8 +112,8 @@ export function ContextSwitcher() {
                         setSelectedScope({ type: 'ENTITY', id: entity.id, name: entity.name });
                         setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-2 text-sm text-left hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
-                        selectedScope.type === 'ENTITY' && selectedScope.id === entity.id ? 'font-semibold bg-zinc-50 dark:bg-zinc-900' : ''
+                    className={`w-full px-4 py-2 text-sm text-left hover:bg-[#F5F5F5] text-[#111111] ${
+                        selectedScope.type === 'ENTITY' && selectedScope.id === entity.id ? 'font-semibold bg-[#F5F5F5]' : ''
                     }`}
                 >
                   All {entity.name} Assets
@@ -126,8 +126,8 @@ export function ContextSwitcher() {
                       setSelectedScope({ type: 'ASSET', id: asset.id, name: asset.name });
                       setIsOpen(false);
                     }}
-                    className={`w-full px-4 py-2 text-sm text-left pl-8 hover:bg-zinc-100 dark:hover:bg-zinc-900 ${
-                      selectedScope.type === 'ASSET' && selectedScope.id === asset.id ? 'font-semibold bg-zinc-50 dark:bg-zinc-900' : ''
+                    className={`w-full px-4 py-2 text-sm text-left pl-8 hover:bg-[#F5F5F5] text-[#111111] ${
+                      selectedScope.type === 'ASSET' && selectedScope.id === asset.id ? 'font-semibold bg-[#F5F5F5]' : ''
                     }`}
                   >
                     {asset.name}
