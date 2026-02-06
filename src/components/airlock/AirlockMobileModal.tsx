@@ -55,6 +55,7 @@ export function AirlockMobileModal({ isOpen, onClose, item, onSave }: AirlockMob
         <TransactionEditor
           key={item.id} // Force re-mount when item changes or modal re-opens
           initialData={item.ai_payload}
+          confidence={item.confidence_score ?? 0}
           onChange={setEditedData}
         />
       </div>
