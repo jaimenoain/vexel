@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { matchGhostEntries } from '@/lib/ghost-entries/matching-service';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,9 @@ export async function POST(request: Request) {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
-    const { error } = await supabase.rpc('commit_airlock_item', { item_id: id });
+    // Call the commit RPC
+    // Note: ensure commit_airlock_item returns the transaction UUID
+    const { data: transactionId, error } = await supabase.rpc('commit_airlock_item', { item_id: id });
 
     if (error) {
       console.error('Error executing commit_airlock_item:', error);
@@ -55,7 +58,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status });
     }
 
-    return NextResponse.json({ success: true });
+    // Ghostbuster Logic: Match Pending Ghost Entries
+    let ghostResults = null;
+    if (transactionId) {
+      try {
+        console.log(`Starting ghost matching for transaction ${transactionId}...`);
+        ghostResults = await matchGhostEntries(transactionId as string);
+        console.log('Ghost matching completed:', ghostResults);
+      } catch (matchError) {
+        console.error('Error during ghost matching:', matchError);
+        // We do not fail the request if matching fails, as the commit was successful
+      }
+    } else {
+        console.warn('commit_airlock_item succeeded but returned no transaction ID. Ghost matching skipped.');
+    }
+
+    return NextResponse.json({ success: true, transactionId, ghostResults });
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
