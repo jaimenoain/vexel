@@ -11,12 +11,14 @@ END $$;
 -- 2. Table: ghost_entries
 CREATE TABLE IF NOT EXISTS public.ghost_entries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    asset_id UUID NOT NULL REFERENCES public.assets(id),
+    asset_id UUID NOT NULL REFERENCES public.assets(id) ON DELETE CASCADE,
     expected_date DATE NOT NULL,
     expected_amount NUMERIC NOT NULL,
     description TEXT NOT NULL,
     recurrence_rule TEXT,
-    status public.ghost_status NOT NULL DEFAULT 'PENDING'
+    status public.ghost_status NOT NULL DEFAULT 'PENDING',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 3. Enable RLS
