@@ -30,31 +30,29 @@ export async function POST(request: Request) {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
-    // 1. Fetch item to validate traffic_light status
-    const { data: item, error: fetchError } = await supabase
-      .from('airlock_items')
-      .select('status, traffic_light')
-      .eq('id', id)
-      .single();
+    const { error } = await supabase.rpc('commit_airlock_item', { item_id: id });
 
-    if (fetchError) {
-      console.error('Error fetching airlock item:', fetchError);
-      return NextResponse.json({ error: 'Item not found or access denied' }, { status: 404 });
-    }
+    if (error) {
+      console.error('Error executing commit_airlock_item:', error);
 
-    if (item.traffic_light === 'RED') {
-      return NextResponse.json({ error: 'Cannot commit items with RED status' }, { status: 400 });
-    }
+      // Determine if it's a validation error (400) or internal error (500)
+      // Check for known messages from RPC
+      const validationErrors = [
+        'Item not found',
+        'Item status must be',
+        'Cannot commit items with RED status',
+        'Invalid payload',
+        'No transactions in payload',
+        'Invalid date',
+        'Invalid amount',
+        'Asset',
+        'Amount is missing'
+      ];
 
-    // 2. Update status to COMMITTED
-    const { error: updateError } = await supabase
-      .from('airlock_items')
-      .update({ status: 'COMMITTED' })
-      .eq('id', id);
+      const isValidationError = validationErrors.some(msg => error.message.includes(msg));
+      const status = isValidationError ? 400 : 500;
 
-    if (updateError) {
-      console.error('Error updating airlock item:', updateError);
-      return NextResponse.json({ error: updateError.message }, { status: 500 });
+      return NextResponse.json({ error: error.message }, { status });
     }
 
     return NextResponse.json({ success: true });
