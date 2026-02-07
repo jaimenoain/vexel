@@ -10,6 +10,9 @@ EXCEPTION
 END $$;
 
 -- 2. Update commit_airlock_item RPC
+-- Drop first to allow changing return type from VOID to UUID
+DROP FUNCTION IF EXISTS public.commit_airlock_item(uuid);
+
 CREATE OR REPLACE FUNCTION public.commit_airlock_item(item_id UUID)
 RETURNS UUID
 LANGUAGE plpgsql
