@@ -3,9 +3,14 @@
  */
 import { POST } from '../route';
 import { createClient } from '@supabase/supabase-js';
+import { matchGhostEntries } from '@/lib/ghost-entries/matching-service';
 
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(),
+}));
+
+jest.mock('@/lib/ghost-entries/matching-service', () => ({
+  matchGhostEntries: jest.fn(),
 }));
 
 // Mock Next.js environment variables
@@ -46,7 +51,7 @@ describe('POST /api/airlock/commit', () => {
   });
 
   it('calls rpc successfully', async () => {
-    mockRpc.mockResolvedValue({ data: null, error: null });
+    mockRpc.mockResolvedValue({ data: 'txn-uuid', error: null });
 
     const req = new Request('http://localhost/api/airlock/commit', {
       method: 'POST',
@@ -60,6 +65,7 @@ describe('POST /api/airlock/commit', () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.success).toBe(true);
+    expect(data.transactionId).toBe('txn-uuid');
 
     expect(createClient).toHaveBeenCalledWith(
       expect.any(String),
@@ -105,5 +111,37 @@ describe('POST /api/airlock/commit', () => {
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe('Database connection failed');
+  });
+
+  it('calls matchGhostEntries when rpc succeeds and returns ID', async () => {
+    mockRpc.mockResolvedValue({ data: 'txn-123', error: null });
+    (matchGhostEntries as jest.Mock).mockResolvedValue({ matchedCount: 1, errors: [] });
+
+    const req = new Request('http://localhost/api/airlock/commit', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer valid-token' },
+      body: JSON.stringify({ id: 'test-uuid' }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.transactionId).toBe('txn-123');
+
+    expect(matchGhostEntries).toHaveBeenCalledWith('txn-123');
+  });
+
+  it('does NOT call matchGhostEntries if rpc fails', async () => {
+     mockRpc.mockResolvedValue({ data: null, error: { message: 'Some error' } });
+
+     const req = new Request('http://localhost/api/airlock/commit', {
+       method: 'POST',
+       headers: { Authorization: 'Bearer valid-token' },
+       body: JSON.stringify({ id: 'test-uuid' }),
+     });
+
+     const res = await POST(req);
+     expect(matchGhostEntries).not.toHaveBeenCalled();
   });
 });
