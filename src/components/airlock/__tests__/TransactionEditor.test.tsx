@@ -7,6 +7,9 @@ import { ExtractedData } from '@/lib/ai/types';
 jest.mock('lucide-react', () => ({
   Plus: () => <span data-testid="icon-plus">Plus</span>,
   Trash2: () => <span data-testid="icon-trash">Trash</span>,
+  CheckCircle: () => <span data-testid="icon-check">Check</span>,
+  AlertTriangle: () => <span data-testid="icon-alert">Alert</span>,
+  AlertCircle: () => <span data-testid="icon-error">Error</span>,
 }));
 
 const mockData: { transactions: ExtractedData[] } = {
