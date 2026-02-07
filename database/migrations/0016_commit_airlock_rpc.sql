@@ -19,7 +19,7 @@ DECLARE
     payload_txns JSONB;
 BEGIN
     -- 1. Fetch item and validate
-    SELECT * INTO item FROM public.airlock_items WHERE id = item_id;
+    SELECT * INTO item FROM public.airlock_items WHERE id = item_id FOR UPDATE;
 
     IF item IS NULL THEN
         RAISE EXCEPTION 'Item not found';
