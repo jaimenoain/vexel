@@ -94,7 +94,7 @@ export async function matchGhostEntries(transactionId: string): Promise<{ matche
 
         const ghostAmountAbs = Math.abs(ghost.expected_amount);
         const diff = Math.abs(ghostAmountAbs - lineAmountAbs);
-        const tolerance = lineAmountAbs * 0.05;
+        const tolerance = ghostAmountAbs * 0.05;
 
         // Ensure tolerance is at least some epsilon if amount is 0 (unlikely for ledger)
         // Check if within tolerance
