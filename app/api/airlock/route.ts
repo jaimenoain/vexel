@@ -7,10 +7,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const assetId = searchParams.get('asset_id');
 
-  if (!assetId) {
-    return NextResponse.json({ error: 'Missing asset_id query parameter' }, { status: 400 });
-  }
-
   const authHeader = request.headers.get('Authorization');
   if (!authHeader) {
     return NextResponse.json({ error: 'Missing Authorization header' }, { status: 401 });
@@ -29,11 +25,15 @@ export async function GET(request: Request) {
     global: { headers: { Authorization: `Bearer ${token}` } },
   });
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('airlock_items')
-    .select('id, status, traffic_light, confidence_score, ai_payload, created_at')
-    .eq('asset_id', assetId)
-    .order('created_at', { ascending: false });
+    .select('id, status, traffic_light, confidence_score, ai_payload, created_at');
+
+  if (assetId) {
+    query = query.eq('asset_id', assetId);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('Database error:', error);

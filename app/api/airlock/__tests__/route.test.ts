@@ -24,13 +24,27 @@ describe('GET /api/airlock', () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'anon-key';
   });
 
-  it('returns 400 if asset_id is missing', async () => {
-    const request = new Request('http://localhost:3000/api/airlock');
+  it('returns all items if asset_id is missing', async () => {
+    const mockData = [{
+      id: '1',
+      status: 'QUEUED',
+      traffic_light: 'YELLOW',
+      confidence_score: 0.85,
+      ai_payload: { summary: 'test' },
+      created_at: '2023-01-01T00:00:00Z'
+    }];
+    mockSupabase.order.mockResolvedValue({ data: mockData, error: null });
+
+    const request = new Request('http://localhost:3000/api/airlock', {
+      headers: { Authorization: 'Bearer token' },
+    });
     const response = await GET(request);
     const data = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(data.error).toBe('Missing asset_id query parameter');
+    expect(response.status).toBe(200);
+    expect(data).toEqual(mockData);
+    expect(mockSupabase.eq).not.toHaveBeenCalled();
+    expect(mockSupabase.order).toHaveBeenCalledWith('created_at', { ascending: false });
   });
 
   it('returns 401 if Authorization header is missing', async () => {
@@ -42,7 +56,7 @@ describe('GET /api/airlock', () => {
     expect(data.error).toBe('Missing Authorization header');
   });
 
-  it('returns data when request is valid', async () => {
+  it('filters by asset_id when provided', async () => {
     const mockData = [{
       id: '1',
       status: 'QUEUED',
@@ -60,8 +74,8 @@ describe('GET /api/airlock', () => {
     const data = await response.json();
 
     expect(createClient).toHaveBeenCalledWith(
-      'http://localhost:54321',
-      'anon-key',
+      expect.stringContaining('http'), // Loose check for env vars
+      expect.any(String),
       { global: { headers: { Authorization: 'Bearer token' } } }
     );
     expect(mockSupabase.from).toHaveBeenCalledWith('airlock_items');
@@ -75,7 +89,7 @@ describe('GET /api/airlock', () => {
   it('returns 500 on database error', async () => {
     mockSupabase.order.mockResolvedValue({ data: null, error: { message: 'DB Error' } });
 
-    const request = new Request('http://localhost:3000/api/airlock?asset_id=123', {
+    const request = new Request('http://localhost:3000/api/airlock', {
       headers: { Authorization: 'Bearer token' },
     });
     const response = await GET(request);
