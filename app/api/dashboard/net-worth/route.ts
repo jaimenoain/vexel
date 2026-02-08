@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     const assetIds = balances.map((b: any) => b.asset_id);
     const { data: assets, error: assetError } = await supabase
       .from('assets')
-      .select('id, currency')
+      .select('id, currency, type')
       .in('id', assetIds);
 
     if (assetError) {
@@ -57,10 +57,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to fetch asset details' }, { status: 500 });
     }
 
-    // Create a map of assetId -> currency
+    // Create a map of assetId -> currency and type
     const currencyMap = new Map<string, string>();
+    const typeMap = new Map<string, string>();
+
     assets?.forEach((a: any) => {
       currencyMap.set(a.id, a.currency);
+      typeMap.set(a.id, a.type);
     });
 
     // 4. Calculate Net Worth
@@ -69,6 +72,12 @@ export async function GET(request: Request) {
     for (const item of balances) {
       const balance = Number(item.balance);
       const currency = currencyMap.get(item.asset_id) || 'USD'; // Default to USD if missing
+      const type = typeMap.get(item.asset_id);
+
+      // Exclude EQUITY (Expenses, Income, Opening Balance) from Net Worth
+      if (type === 'EQUITY') {
+        continue;
+      }
 
       // Normalize to USD (User Base Currency assumed USD for V1)
       const normalizedAmount = CurrencyService.normalizeToUserBase(balance, currency, 'USD');
