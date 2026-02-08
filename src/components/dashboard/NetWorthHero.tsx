@@ -2,12 +2,10 @@
 
 import useSWR from 'swr';
 import { useAuth } from '@/app/context/AuthContext';
-import { useState } from 'react';
 import clsx from 'clsx';
 
 export function NetWorthHero() {
   const { session } = useAuth();
-  const [isHovered, setIsHovered] = useState(false);
 
   // Use inline fetcher to handle SWR args safely
   const { data: safeData, error: safeError, isLoading: safeLoading } = useSWR(
@@ -20,8 +18,8 @@ export function NetWorthHero() {
   if (safeLoading) {
     return (
       <div className="flex flex-col gap-4 animate-pulse p-6">
-        <div className="h-6 w-32 bg-gray-200 rounded"></div>
-        <div className="h-16 w-64 bg-gray-200 rounded"></div>
+        <div className="h-6 w-32 bg-[#E5E5E5] rounded"></div>
+        <div className="h-16 w-64 bg-[#E5E5E5] rounded"></div>
       </div>
     );
   }
@@ -29,7 +27,7 @@ export function NetWorthHero() {
   if (safeError) {
     return (
       <div className="flex flex-col gap-2 p-6">
-        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">Net Worth</h2>
+        <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">Net Worth</h2>
         <p className="text-red-500">Error loading data</p>
       </div>
     );
@@ -43,17 +41,12 @@ export function NetWorthHero() {
   }).format(netWorth);
 
   return (
-    <div
-      className="flex flex-col gap-2 p-6"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <h2 className="text-lg font-bold text-gray-900 uppercase tracking-wide">Net Worth</h2>
+    <div className="flex flex-col gap-2 p-6 group cursor-default">
+      <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">Net Worth</h2>
       <div className="flex flex-wrap items-baseline gap-2">
         <span
           className={clsx(
-            "text-2xl font-light text-gray-400 transition-opacity duration-200",
-            isHovered ? "opacity-100" : "opacity-0"
+            "text-2xl font-light text-[#111111] transition-opacity duration-200 opacity-0 group-hover:opacity-100 group-active:opacity-100"
           )}
         >
           $
