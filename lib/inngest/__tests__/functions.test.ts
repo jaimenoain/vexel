@@ -1,7 +1,8 @@
-import { updateItemStatus, processDocumentHandler } from '../functions';
+import { updateItemStatus, processDocumentHandler, checkOverdueGovernanceHandler } from '../functions';
 import { supabaseAdmin } from '../../supabase-admin';
 import { ParserFactory } from '../../ai/factory';
 import { gradeAirlockItem } from '../../airlock/traffic-light';
+import { NotificationService } from '../../notification-service';
 
 // Mock dependencies
 jest.mock('../../supabase-admin', () => {
@@ -21,6 +22,9 @@ jest.mock('../../supabase-admin', () => {
         chain.storage = {
             from: jest.fn().mockReturnValue(chain)
         };
+        chain.gt = jest.fn().mockReturnValue(chain);
+        chain.in = jest.fn().mockReturnValue(chain);
+        chain.rpc = jest.fn().mockReturnValue({ error: null });
         return chain;
     };
 
@@ -31,7 +35,8 @@ jest.mock('../../supabase-admin', () => {
             from: jest.fn(() => mockInstance),
             storage: {
                 from: jest.fn(() => mockInstance)
-            }
+            },
+            rpc: jest.fn(() => ({ error: null }))
         }
     };
 });
@@ -45,6 +50,15 @@ jest.mock('../../ai/factory', () => ({
 jest.mock('../../airlock/traffic-light', () => ({
     gradeAirlockItem: jest.fn()
 }));
+
+const mockSendNotification = jest.fn();
+jest.mock('../../notification-service', () => {
+    return {
+        NotificationService: jest.fn().mockImplementation(() => ({
+            sendNotification: mockSendNotification
+        }))
+    };
+});
 
 describe('Airlock Inngest Functions', () => {
     let mockChain: any;
@@ -64,6 +78,9 @@ describe('Airlock Inngest Functions', () => {
             data: { arrayBuffer: async () => new ArrayBuffer(8) },
             error: null
         });
+        // Default behavior for gt/in is to return chain (builder pattern) unless overridden
+        mockChain.gt.mockReturnValue(mockChain);
+        mockChain.in.mockReturnValue(mockChain);
 
         // Mock Parser
         (ParserFactory.getParser as jest.Mock).mockReturnValue({
@@ -135,6 +152,18 @@ describe('Airlock Inngest Functions', () => {
             );
         });
 
+        it('should send notification on success', async () => {
+             await processDocumentHandler({ event: mockEvent, step: mockStep } as any);
+             expect(mockSendNotification).toHaveBeenCalledWith(
+                 'user-1',
+                 'AIRLOCK_READY',
+                 {
+                     filename: 'test.pdf',
+                     link: 'http://localhost:3000/airlock?asset_id=asset-1'
+                 }
+             );
+        });
+
         it('should use provided airlock_item_id if available', async () => {
             const eventWithId = {
                 data: { ...mockEvent.data, airlock_item_id: 'provided-id' }
@@ -163,6 +192,72 @@ describe('Airlock Inngest Functions', () => {
                 status: 'ERROR',
                 ai_payload: { error: expect.stringContaining('S3 Error') }
             });
+        });
+    });
+
+    describe('checkOverdueGovernanceHandler', () => {
+        const mockStep = {
+            run: jest.fn(async (name, fn) => fn())
+        };
+
+        it('should process overdue ghosts and send notifications for new tasks', async () => {
+            // Mock RPC success
+            (supabaseAdmin.rpc as jest.Mock).mockResolvedValue({ error: null });
+
+            // Mock fetch newly created tasks.
+            mockChain.gt.mockResolvedValue({
+                data: [
+                    { id: 'task-1', asset_id: 'asset-A' },
+                    { id: 'task-2', asset_id: 'asset-A' },
+                    { id: 'task-3', asset_id: 'asset-B' }
+                ],
+                error: null
+            });
+
+            // Mock fetch access grants.
+            mockChain.in
+              .mockReturnValueOnce(mockChain) // First .in call returns the chain
+              .mockResolvedValueOnce({        // Second .in call returns the data promise
+                data: [
+                    { user_id: 'user-1', asset_id: 'asset-A' }, // Owner of A
+                    { user_id: 'user-2', asset_id: 'asset-A' }, // Editor of A
+                    { user_id: 'user-1', asset_id: 'asset-B' }  // Owner of B
+                ],
+                error: null
+            });
+
+            await checkOverdueGovernanceHandler({ step: mockStep });
+
+            // 1. RPC called
+            expect(supabaseAdmin.rpc).toHaveBeenCalledWith('process_overdue_ghosts');
+
+            // 2. Notifications sent
+            // User 1 has 2 tasks from A and 1 from B = 3 tasks
+            expect(mockSendNotification).toHaveBeenCalledWith(
+                'user-1',
+                'GOVERNANCE_ALERT',
+                { count: 3, link: 'http://localhost:3000/dashboard' }
+            );
+
+            // User 2 has 2 tasks from A = 2 tasks
+            expect(mockSendNotification).toHaveBeenCalledWith(
+                'user-2',
+                'GOVERNANCE_ALERT',
+                { count: 2, link: 'http://localhost:3000/dashboard' }
+            );
+        });
+
+        it('should do nothing if no new tasks found', async () => {
+            // Mock RPC success
+            (supabaseAdmin.rpc as jest.Mock).mockResolvedValue({ error: null });
+
+            // Mock fetch newly created tasks -> empty
+            mockChain.gt.mockResolvedValue({ data: [], error: null });
+
+            const result = await checkOverdueGovernanceHandler({ step: mockStep });
+
+            expect(result).toEqual({ message: "No new tasks found." });
+            expect(mockSendNotification).not.toHaveBeenCalled();
         });
     });
 });

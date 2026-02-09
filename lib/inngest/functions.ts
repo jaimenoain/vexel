@@ -4,6 +4,7 @@ import { ParserFactory } from "../ai/factory";
 import { gradeAirlockItem } from "../airlock/traffic-light";
 import { ExtractedData } from "../ai/types";
 import { Readable } from "stream";
+import { NotificationService } from "../notification-service";
 
 // Define the event type
 type DocumentUploadedEvent = {
@@ -34,7 +35,7 @@ export async function updateItemStatus(id: string, status: string, errorMessage?
 }
 
 export const processDocumentHandler = async ({ event, step }: { event: DocumentUploadedEvent; step: any }) => {
-  const { file_path, asset_id, airlock_item_id } = event.data;
+  const { file_path, asset_id, airlock_item_id, user_id } = event.data;
 
   await step.run("log-start", async () => {
     console.log(`Job Started for Asset [${asset_id}] File [${file_path}]`);
@@ -115,6 +116,14 @@ export const processDocumentHandler = async ({ event, step }: { event: DocumentU
       }
     });
 
+    await step.run("send-notification", async () => {
+      // Send Notification
+      const notificationService = new NotificationService(supabaseAdmin);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const link = `${appUrl}/airlock?asset_id=${asset_id}`;
+      await notificationService.sendNotification(user_id, 'AIRLOCK_READY', { filename: file_path, link });
+    });
+
   } catch (err: any) {
     await step.run("handle-error", async () => {
       console.error(`Processing failed for item ${resolvedItemId}:`, err);
@@ -132,4 +141,88 @@ export const processDocument = inngest.createFunction(
   { id: "process-document" },
   { event: "airlock/document.uploaded" },
   processDocumentHandler
+);
+
+export const checkOverdueGovernanceHandler = async ({ step }: { step: any }) => {
+  const notificationService = new NotificationService(supabaseAdmin);
+
+  // 1. Run process_overdue_ghosts
+  await step.run("process-overdue-ghosts", async () => {
+    const { error } = await supabaseAdmin.rpc('process_overdue_ghosts');
+    if (error) {
+      throw new Error(`Failed to process overdue ghosts: ${error.message}`);
+    }
+  });
+
+  // 2. Fetch newly created tasks
+  const newTasks = await step.run("fetch-new-tasks", async () => {
+    // 45 minutes window to catch tasks created by this run or pg_cron
+    const timeWindow = new Date(Date.now() - 45 * 60 * 1000).toISOString();
+    const { data, error } = await supabaseAdmin
+      .from('governance_tasks')
+      .select('id, asset_id')
+      .gt('created_at', timeWindow);
+
+    if (error) {
+      throw new Error(`Failed to fetch new tasks: ${error.message}`);
+    }
+    return data || [];
+  });
+
+  if (newTasks.length === 0) {
+    return { message: "No new tasks found." };
+  }
+
+  // 3. Group by User
+  const userTaskCounts = await step.run("group-by-user", async () => {
+    const assetIds = [...new Set(newTasks.map((t: any) => t.asset_id))];
+    const userCounts: Record<string, number> = {};
+
+    // For each asset, find relevant users (Owner/Editor)
+    const { data: grants, error } = await supabaseAdmin
+      .from('access_grants')
+      .select('user_id, asset_id')
+      .in('asset_id', assetIds)
+      .in('permission_level', ['OWNER', 'EDITOR']);
+
+    if (error) {
+      throw new Error(`Failed to fetch access grants: ${error.message}`);
+    }
+
+    if (!grants) return {};
+
+    // Map asset -> users
+    const assetUsers: Record<string, string[]> = {};
+    grants.forEach((grant: any) => {
+      if (!assetUsers[grant.asset_id]) assetUsers[grant.asset_id] = [];
+      assetUsers[grant.asset_id].push(grant.user_id);
+    });
+
+    // Count tasks per user
+    newTasks.forEach((task: any) => {
+      const users = assetUsers[task.asset_id] || [];
+      users.forEach((userId) => {
+        userCounts[userId] = (userCounts[userId] || 0) + 1;
+      });
+    });
+
+    return userCounts;
+  });
+
+  // 4. Send Notifications
+  await step.run("send-notifications", async () => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const link = `${appUrl}/dashboard`;
+    for (const [userId, count] of Object.entries(userTaskCounts)) {
+      await notificationService.sendNotification(userId, 'GOVERNANCE_ALERT', { count: count as number, link });
+    }
+  });
+
+  return { success: true, notifiedUsers: Object.keys(userTaskCounts).length };
+};
+
+export const checkOverdueGovernance = inngest.createFunction(
+  { id: "check-overdue-governance" },
+  { cron: "30 0 * * *" }, // Run daily at 00:30 UTC
+  checkOverdueGovernanceHandler
 );
