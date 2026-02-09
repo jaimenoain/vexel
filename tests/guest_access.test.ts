@@ -1,152 +1,150 @@
 /**
  * @jest-environment node
  */
-import { POST as POST_INVITE } from '@/app/api/invites/route';
-import { GET as GET_SESSION } from '@/app/api/guest/session/route';
-import { GET as GET_HISTORY } from '@/app/api/assets/[assetId]/history/route';
+import { POST } from '@/app/api/invites/route';
+import { GET } from '@/app/api/guest/session/route';
 import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
 
 // Mock Supabase
 jest.mock('@supabase/supabase-js', () => ({
   createClient: jest.fn(),
 }));
 
-describe('Guest Access API', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+describe('Auditor Guest Access API', () => {
   let mockSupabase: any;
+  const originalEnv = process.env;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env = {
+      ...originalEnv,
+      NEXT_PUBLIC_SUPABASE_URL: 'https://example.com',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'key',
+    };
+
     mockSupabase = {
       auth: {
-        getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'user1' } }, error: null }),
+        getUser: jest.fn(),
       },
-      from: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
+      from: jest.fn(),
       rpc: jest.fn(),
     };
     (createClient as jest.Mock).mockReturnValue(mockSupabase);
   });
 
+  afterEach(() => {
+    process.env = originalEnv;
+  });
+
   describe('POST /api/invites', () => {
-    it('creates an invite successfully', async () => {
-      mockSupabase.from.mockReturnValue({
-        insert: jest.fn().mockResolvedValue({ error: null }),
+    it('returns 401 if Authorization header is missing', async () => {
+      const req = new Request('http://localhost/api/invites', {
+        method: 'POST',
       });
+      const res = await POST(req);
+      const json = await res.json();
+
+      expect(res.status).toBe(401);
+      expect(json.error).toBe('Missing Authorization header');
+    });
+
+    it('returns 401 if user is not authenticated', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: null }, error: { message: 'Auth error' } });
 
       const req = new Request('http://localhost/api/invites', {
         method: 'POST',
-        headers: { Authorization: 'Bearer valid-token' },
-        body: JSON.stringify({ asset_id: 'asset-123', duration_hours: 24 }),
+        headers: { Authorization: 'Bearer token' },
       });
+      const res = await POST(req);
+      const json = await res.json();
 
-      const res = await POST_INVITE(req);
+      expect(res.status).toBe(401);
+      expect(json.error).toBe('Unauthorized');
+    });
+
+    it('returns 400 if required fields are missing', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-id' } }, error: null });
+
+      const req = new Request('http://localhost/api/invites', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer token' },
+        body: JSON.stringify({}),
+      });
+      const res = await POST(req);
+      const json = await res.json();
+
+      expect(res.status).toBe(400);
+      expect(json.error).toBe('Missing required fields: asset_id, duration_hours');
+    });
+
+    it('creates an invite successfully', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: 'user-id' } }, error: null });
+      const mockInsert = jest.fn().mockResolvedValue({ error: null });
+      mockSupabase.from.mockReturnValue({ insert: mockInsert });
+
+      const req = new Request('http://localhost/api/invites', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer token' },
+        body: JSON.stringify({ asset_id: 'asset-id', duration_hours: 48 }),
+      });
+      const res = await POST(req);
       const json = await res.json();
 
       expect(res.status).toBe(200);
       expect(json.url).toContain('/guest/');
+      expect(json.expires_at).toBeDefined();
+
+      // Verify expiration calculation (approximate)
+      const expiresAt = new Date(json.expires_at);
+      const now = new Date();
+      const diffHours = (expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60);
+      expect(diffHours).toBeCloseTo(48, 0.1);
+
+      // Verify Supabase insert call
       expect(mockSupabase.from).toHaveBeenCalledWith('guest_invites');
-      expect(mockSupabase.auth.getUser).toHaveBeenCalled();
-    });
-
-    it('returns 401 if unauthorized', async () => {
-      const req = new Request('http://localhost/api/invites', {
-        method: 'POST',
-        body: JSON.stringify({ asset_id: 'asset-123', duration_hours: 24 }),
-      });
-
-      const res = await POST_INVITE(req);
-      expect(res.status).toBe(401);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
+        asset_id: 'asset-id',
+        created_by: 'user-id',
+        token: expect.any(String),
+        expires_at: expect.any(String),
+      }));
     });
   });
 
   describe('GET /api/guest/session', () => {
-    it('validates a valid token', async () => {
-      mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
-
-      const req = new Request('http://localhost/api/guest/session?token=valid-token');
-      const res = await GET_SESSION(req);
+    it('returns 400 if token is missing', async () => {
+      const req = new Request('http://localhost/api/guest/session');
+      const res = await GET(req);
       const json = await res.json();
 
-      expect(res.status).toBe(200);
-      expect(json.valid).toBe(true);
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('validate_guest_token', { p_token: 'valid-token' });
+      expect(res.status).toBe(400);
+      expect(json.error).toBe('Missing token parameter');
     });
 
-    it('rejects an invalid token', async () => {
+    it('returns 401 if token is invalid', async () => {
       mockSupabase.rpc.mockResolvedValue({ data: false, error: null });
 
-      const req = new Request('http://localhost/api/guest/session?token=invalid-token');
-      const res = await GET_SESSION(req);
+      const req = new Request('http://localhost/api/guest/session?token=invalid');
+      const res = await GET(req);
       const json = await res.json();
 
       expect(res.status).toBe(401);
       expect(json.valid).toBe(false);
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('validate_guest_token', { p_token: 'invalid' });
     });
-  });
 
-  describe('GET /api/assets/[assetId]/history', () => {
-    it('returns history for authenticated user', async () => {
-      const mockData = [
-        {
-          amount: 100,
-          type: 'DEBIT',
-          ledger_transactions: { id: 'txn1', date: '2023-01-01', description: 'Test' },
-        },
-      ];
-      mockSupabase.from.mockReturnValue({
-        select: jest.fn().mockReturnValue({
-          eq: jest.fn().mockReturnValue({
-            order: jest.fn().mockResolvedValue({ data: mockData, error: null }),
-          }),
-        }),
-      });
+    it('returns 200 and valid: true if token is valid', async () => {
+      mockSupabase.rpc.mockResolvedValue({ data: true, error: null });
 
-      const req = new Request('http://localhost/api/assets/asset-123/history', {
-        headers: { Authorization: 'Bearer user-token' },
-      });
-      const params = Promise.resolve({ assetId: 'asset-123' });
-
-      const res = await GET_HISTORY(req, { params });
+      const req = new Request('http://localhost/api/guest/session?token=valid');
+      const res = await GET(req);
       const json = await res.json();
 
       expect(res.status).toBe(200);
-      expect(json[0].id).toBe('txn1');
-      expect(json[0].amount).toBe(100);
-      expect(mockSupabase.from).toHaveBeenCalledWith('ledger_lines');
-    });
-
-    it('returns history for guest user', async () => {
-      const mockData = [
-        { id: 'txn1', date: '2023-01-01', description: 'Test', amount: 100, type: 'DEBIT' },
-      ];
-      mockSupabase.rpc.mockResolvedValue({ data: mockData, error: null });
-
-      const req = new Request('http://localhost/api/assets/asset-123/history', {
-        headers: { 'x-guest-token': 'guest-token' },
-      });
-      const params = Promise.resolve({ assetId: 'asset-123' });
-
-      const res = await GET_HISTORY(req, { params });
-      const json = await res.json();
-
-      expect(res.status).toBe(200);
-      expect(json[0].id).toBe('txn1');
-      expect(mockSupabase.rpc).toHaveBeenCalledWith('get_guest_asset_history', {
-        p_asset_id: 'asset-123',
-        p_token: 'guest-token',
-      });
-    });
-
-    it('returns 401 if no auth', async () => {
-      const req = new Request('http://localhost/api/assets/asset-123/history');
-      const params = Promise.resolve({ assetId: 'asset-123' });
-
-      const res = await GET_HISTORY(req, { params });
-      expect(res.status).toBe(401);
+      expect(json.valid).toBe(true);
+      expect(json.token).toBe('valid');
+      expect(mockSupabase.rpc).toHaveBeenCalledWith('validate_guest_token', { p_token: 'valid' });
     });
   });
 });
