@@ -1,0 +1,35 @@
+
+> vexel-init@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+
+✓ Starting...
+✓ Ready in 1097ms
+○ Compiling / ...
+ GET / 200 in 4.9s (compile: 4.3s, render: 534ms)
+Database error: {
+  code: 'PGRST301',
+  details: null,
+  hint: null,
+  message: 'Expected 3 parts in JWT; got 1'
+}
+ GET / 200 in 217ms (compile: 73ms, render: 144ms)
+ GET /api/directory 200 in 141ms (compile: 9ms, render: 133ms)
+Database error: {
+  code: 'PGRST301',
+  details: null,
+  hint: null,
+  message: 'Expected 3 parts in JWT; got 1'
+}
+ GET / 200 in 198ms (compile: 64ms, render: 134ms)
+ GET /api/directory 200 in 183ms (compile: 7ms, render: 176ms)
+Database error: {
+  code: 'PGRST301',
+  details: null,
+  hint: null,
+  message: 'Expected 3 parts in JWT; got 1'
+}
