@@ -44,10 +44,10 @@ async function runVerification() {
   const service = new NotificationService(mockSupabase as any, mockResend);
 
   console.log('--- Test Case 1: AIRLOCK_READY (Enabled) ---');
-  await service.sendNotification('user_1', 'AIRLOCK_READY', { filename: 'test_doc.pdf' });
+  await service.sendNotification('user_1', 'AIRLOCK_READY', { filename: 'test_doc.pdf', link: '/airlock' });
 
   console.log('\n--- Test Case 2: GOVERNANCE_ALERT (Disabled) ---');
-  await service.sendNotification('user_1', 'GOVERNANCE_ALERT', { count: 5 });
+  await service.sendNotification('user_1', 'GOVERNANCE_ALERT', { count: 5, link: '/dashboard' });
 }
 
 runVerification().catch(console.error);

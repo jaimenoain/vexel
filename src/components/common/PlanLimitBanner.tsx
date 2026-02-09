@@ -14,7 +14,7 @@ export function PlanLimitBanner() {
 
   const { data, error, isLoading } = useSWR<UsageStatus>(
     session ? '/api/usage' : null,
-    (url) => fetcher(url, session?.access_token || '')
+    (url: string) => fetcher(url, session?.access_token || '')
   );
 
   if (isLoading || error || !data || !data.is_over_limit) {
