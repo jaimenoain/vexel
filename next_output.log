@@ -1,0 +1,60 @@
+
+> vexel-init@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+✓ Ready in 1201ms
+○ Compiling /airlock/[id] ...
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ GET /airlock/123 200 in 8.2s (compile: 7.5s, render: 687ms)
+ GET /airlock/123 200 in 123ms (compile: 28ms, render: 95ms)
+ GET /airlock/123 200 in 106ms (compile: 27ms, render: 79ms)
+ GET /airlock/123 200 in 101ms (compile: 25ms, render: 75ms)
+ GET /api/usage 200 in 1138ms (compile: 990ms, render: 147ms)
+ GET /api/directory 200 in 1136ms (compile: 916ms, render: 220ms)
+Usage API Error: Error: Failed to fetch asset usage:
+    at getUsageStatus (lib/usage-service.ts:18:11)
+    at async GET (app/api/usage/route.ts:27:19)
+  16 |
+  17 |   if (error) {
+> 18 |     throw new Error(`Failed to fetch asset usage: ${error.message}`);
+     |           ^
+  19 |   }
+  20 |
+  21 |   const currentCount = count || 0;
+Database error: {
+  code: 'PGRST301',
+  details: null,
+  hint: null,
+  message: 'Expected 3 parts in JWT; got 1'
+}
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ GET /airlock/123 200 in 467ms (compile: 161ms, render: 306ms)
+Usage API Error: Error: Failed to fetch asset usage:
+    at getUsageStatus (lib/usage-service.ts:18:11)
+    at async GET (app/api/usage/route.ts:27:19)
+  16 |
+  17 |   if (error) {
+> 18 |     throw new Error(`Failed to fetch asset usage: ${error.message}`);
+     |           ^
+  19 |   }
+  20 |
+  21 |   const currentCount = count || 0;
+ GET /api/usage 500 in 585ms (compile: 5ms, render: 580ms)
+Database error: {
+  code: 'PGRST301',
+  details: null,
+  hint: null,
+  message: 'Expected 3 parts in JWT; got 1'
+}
+ GET /api/directory 500 in 589ms (compile: 18ms, render: 571ms)
