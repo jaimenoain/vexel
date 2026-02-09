@@ -7,8 +7,8 @@ import { GovernanceAlert } from './emails/GovernanceAlert';
 import { Profile } from './types';
 import * as React from 'react'; // Requirement for JSX in render
 
-type AirlockPayload = { filename: string };
-type GovernancePayload = { count: number };
+type AirlockPayload = { filename: string; link: string };
+type GovernancePayload = { count: number; link: string };
 
 export class NotificationService {
   private resend: Resend;
@@ -59,10 +59,12 @@ export class NotificationService {
       let subject: string;
 
       if (type === 'AIRLOCK_READY') {
-        emailHtml = await render(<AirlockReady filename={(payload as AirlockPayload).filename} />);
+        const p = payload as AirlockPayload;
+        emailHtml = await render(<AirlockReady filename={p.filename} link={p.link} />);
         subject = 'Document Ready for Review';
       } else if (type === 'GOVERNANCE_ALERT') {
-        emailHtml = await render(<GovernanceAlert count={(payload as GovernancePayload).count} />);
+        const p = payload as GovernancePayload;
+        emailHtml = await render(<GovernanceAlert count={p.count} link={p.link} />);
         subject = 'Action Required: Overdue Items';
       } else {
         console.error(`Unknown notification type: ${type}`);
