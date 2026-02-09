@@ -22,6 +22,7 @@ export function EntityAccordion({ entity }: { entity: Entity }) {
           className={clsx("text-[#111111] transition-transform duration-200", {
             "rotate-90": isOpen,
           })}
+          data-testid="chevron-icon"
         />
       </button>
       {isOpen && (
