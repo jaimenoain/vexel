@@ -71,7 +71,7 @@ async function main() {
             console.warn('Skipping DB data test due to sign-in failure. Falling back to Mock Data.');
         } else {
             const token = sessionData.session.access_token;
-            const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            const userClient = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
                 global: { headers: { Authorization: `Bearer ${token}` } },
             });
 
@@ -207,7 +207,7 @@ async function main() {
 
     // 4. Generate PDF
     console.log('Generating PDF...');
-    await renderToFile(React.createElement(NetWorthStatement, { data: reportData }), './net_worth_verification.pdf');
+    await renderToFile(React.createElement(NetWorthStatement, { data: reportData }) as any, './net_worth_verification.pdf');
     console.log('PDF generated successfully: ./net_worth_verification.pdf');
 
   } catch (error) {
