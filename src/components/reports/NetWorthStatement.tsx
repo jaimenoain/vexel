@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   },
   coverDate: {
     fontSize: 14,
-    color: '#666666',
+    color: '#000000',
     marginBottom: 40,
   },
   logoPlaceholder: {
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 8,
-    color: '#999999',
+    color: '#000000',
   },
 
   // Section Styles
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 15,
     marginBottom: 5,
-    color: '#333333',
+    color: '#000000',
   },
 
   // Table Styles
