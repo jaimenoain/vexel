@@ -4,7 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { useAuth } from '@/app/context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { formatCurrency } from '@/lib/formatting';
+import { formatCurrencyParts } from '@/lib/formatting';
 import { Download, Loader2 } from 'lucide-react';
 import { SimpleToast } from '@/src/components/common/SimpleToast';
 
@@ -69,8 +69,8 @@ export function NetWorthHero() {
   }
 
   const netWorth = safeData?.net_worth ?? 0;
-  // Format number using formatCurrency
-  const formattedValue = formatCurrency(netWorth, 'USD', i18n.language);
+  // Format number using formatCurrencyParts
+  const { symbol, value } = formatCurrencyParts(netWorth, 'USD', i18n.language);
 
   return (
     <div className="flex flex-col gap-2 p-6 group cursor-default relative">
@@ -86,9 +86,10 @@ export function NetWorthHero() {
         </button>
       </div>
       <div className="flex flex-wrap items-baseline gap-2">
-        <span className="text-4xl lg:text-5xl font-light text-[#111111] leading-tight tracking-tight break-words">
-          {formattedValue}
-        </span>
+        <div className="text-4xl lg:text-5xl font-light text-[#111111] leading-tight tracking-tight break-words flex items-baseline">
+          <span className="hidden group-hover:inline mr-2 transition-all duration-200">{symbol}</span>
+          <span>{value}</span>
+        </div>
       </div>
       {toast && (
         <SimpleToast
