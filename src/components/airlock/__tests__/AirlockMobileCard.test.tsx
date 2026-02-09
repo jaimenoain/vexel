@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { AirlockMobileCard } from '../AirlockMobileCard';
 import { AirlockItem } from '@/lib/types';
 
@@ -23,8 +23,6 @@ const mockItem: AirlockItem = {
 };
 
 describe('AirlockMobileCard', () => {
-  const mockOnApprove = jest.fn();
-  const mockOnRemove = jest.fn();
   const mockOnClick = jest.fn();
 
   beforeEach(() => {
@@ -36,8 +34,6 @@ describe('AirlockMobileCard', () => {
       <AirlockMobileCard
         item={mockItem}
         onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
       />
     );
 
@@ -46,104 +42,44 @@ describe('AirlockMobileCard', () => {
     expect(screen.getByText('YELLOW')).toBeInTheDocument();
   });
 
-  it('disables Approve button when traffic_light is RED (Guardrail Check)', () => {
-    const redItem = { ...mockItem, traffic_light: 'RED' as const };
-    render(
-      <AirlockMobileCard
-        item={redItem}
-        onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
-      />
-    );
-
-    // The button always has aria-label="Approve"
-    const button = screen.getByRole('button', { name: 'Approve' });
-
-    expect(button).toBeDisabled();
-    expect(button).toHaveClass('cursor-not-allowed');
-    expect(button).toHaveAttribute('title', 'Cannot approve items with RED status');
-
-    fireEvent.click(button);
-    expect(mockOnApprove).not.toHaveBeenCalled();
-  });
-
-  it('calls onApprove when clicking Approve on valid item (State Transition)', async () => {
-    mockOnApprove.mockResolvedValue(undefined);
-
-    render(
-      <AirlockMobileCard
-        item={mockItem}
-        onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
-      />
-    );
-
-    const button = screen.getByRole('button', { name: 'Approve' });
-    fireEvent.click(button);
-
-    expect(mockOnApprove).toHaveBeenCalledWith('123');
-  });
-
-  it('shows loading state during approval', async () => {
-    let resolveApprove: () => void;
-    const approvePromise = new Promise<void>((resolve) => {
-      resolveApprove = resolve;
-    });
-    mockOnApprove.mockReturnValue(approvePromise);
-
-    render(
-      <AirlockMobileCard
-        item={mockItem}
-        onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
-      />
-    );
-
-    const button = screen.getByRole('button', { name: 'Approve' });
-    fireEvent.click(button);
-
-    // Should be disabled while approving
-    expect(button).toBeDisabled();
-
-    // Resolve promise
-    // @ts-ignore
-    resolveApprove();
-
-    await waitFor(() => expect(mockOnApprove).toHaveBeenCalled());
-  });
-
-  it('triggers exit animation and calls onRemove after delay (Visual Feedback)', async () => {
-    jest.useFakeTimers();
-    mockOnApprove.mockResolvedValue(undefined);
-
+  it('applies selected styles when isSelected is true', () => {
     const { container } = render(
       <AirlockMobileCard
         item={mockItem}
         onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
+        isSelected={true}
       />
     );
 
-    const button = screen.getByRole('button', { name: 'Approve' });
-    fireEvent.click(button);
-
-    await waitFor(() => expect(mockOnApprove).toHaveBeenCalled());
-
-    // Check for exit animation class - wait for re-render
     const card = container.firstChild as HTMLElement;
-    await waitFor(() => {
-        expect(card).toHaveClass('opacity-0');
-        expect(card).toHaveClass('translate-x-full');
-    });
+    expect(card).toHaveClass('border-black');
+    expect(card).toHaveClass('ring-1');
+    expect(card).toHaveClass('ring-black');
+  });
 
-    // Fast-forward timer
-    jest.advanceTimersByTime(300);
+  it('applies exiting styles when isExiting is true', () => {
+    const { container } = render(
+      <AirlockMobileCard
+        item={mockItem}
+        onClick={mockOnClick}
+        isExiting={true}
+      />
+    );
 
-    expect(mockOnRemove).toHaveBeenCalledWith('123');
-    jest.useRealTimers();
+    const card = container.firstChild as HTMLElement;
+    expect(card).toHaveClass('opacity-0');
+    expect(card).toHaveClass('translate-x-full');
+  });
+
+  it('calls onClick when clicked', () => {
+    render(
+      <AirlockMobileCard
+        item={mockItem}
+        onClick={mockOnClick}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Test Vendor'));
+    expect(mockOnClick).toHaveBeenCalled();
   });
 });

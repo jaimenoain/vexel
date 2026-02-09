@@ -24,8 +24,6 @@ const mockItem: AirlockItem = {
 };
 
 describe('AirlockMobileCard Traffic Colors', () => {
-  const mockOnApprove = jest.fn();
-  const mockOnRemove = jest.fn();
   const mockOnClick = jest.fn();
 
   beforeEach(() => {
@@ -38,8 +36,6 @@ describe('AirlockMobileCard Traffic Colors', () => {
       <AirlockMobileCard
         item={item}
         onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
       />
     );
 
@@ -55,8 +51,6 @@ describe('AirlockMobileCard Traffic Colors', () => {
       <AirlockMobileCard
         item={item}
         onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
       />
     );
 
@@ -72,8 +66,6 @@ describe('AirlockMobileCard Traffic Colors', () => {
       <AirlockMobileCard
         item={item}
         onClick={mockOnClick}
-        onApprove={mockOnApprove}
-        onRemove={mockOnRemove}
       />
     );
 
