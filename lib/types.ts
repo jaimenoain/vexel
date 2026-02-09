@@ -8,6 +8,10 @@ export interface Profile {
   role: Role;
   created_at: string;
   updated_at: string;
+  notification_settings: {
+    airlock_ready: boolean;
+    governance_alert: boolean;
+  };
 }
 
 export type EntityType = 'FAMILY' | 'HOLDING' | 'COMPANY';
