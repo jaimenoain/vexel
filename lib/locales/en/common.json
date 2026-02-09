@@ -1,6 +1,15 @@
 {
-  "dashboard": "Dashboard",
-  "airlock": "Airlock",
-  "settings": "Settings",
-  "net_worth": "Net Worth"
+  "nav": {
+    "dashboard": "Dashboard",
+    "airlock": "Airlock",
+    "portfolio": "Portfolio",
+    "ledger": "Ledger",
+    "directory": "Directory",
+    "documents": "Documents",
+    "governance": "Governance",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "net_worth": "Net Worth"
+  }
 }
