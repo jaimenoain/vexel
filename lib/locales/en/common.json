@@ -10,6 +10,8 @@
     "settings": "Settings"
   },
   "dashboard": {
-    "net_worth": "Net Worth"
+    "net_worth": "Net Worth",
+    "download_report": "Download Report",
+    "generating_report": "Generating..."
   }
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { NetWorthHero } from '../NetWorthHero';
 import { useAuth } from '@/app/context/AuthContext';
@@ -32,7 +32,12 @@ describe('NetWorthHero', () => {
       session: mockSession,
     });
     (useTranslation as jest.Mock).mockReturnValue({
-      t: (key: string) => key === 'dashboard.net_worth' ? 'Net Worth Translated' : key,
+      t: (key: string) => {
+        if (key === 'dashboard.net_worth') return 'Net Worth Translated';
+        if (key === 'dashboard.download_report') return 'Download Report';
+        if (key === 'dashboard.generating_report') return 'Generating...';
+        return key;
+      },
       i18n: {
         language: 'en',
       },
@@ -69,5 +74,39 @@ describe('NetWorthHero', () => {
     expect(screen.getByText('$1,000.00')).toBeInTheDocument();
 
     expect(formatCurrency).toHaveBeenCalledWith(1000, 'USD', 'en');
+  });
+
+  it('triggers report generation on button click', async () => {
+    (useSWR as jest.Mock).mockReturnValue({
+      data: { net_worth: 1000 },
+      isLoading: false,
+    });
+
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(['pdf content'])),
+      })
+    ) as jest.Mock;
+
+    global.URL.createObjectURL = jest.fn(() => 'blob:url');
+    global.URL.revokeObjectURL = jest.fn();
+
+    render(<NetWorthHero />);
+
+    const button = screen.getByText('Download Report');
+    fireEvent.click(button);
+
+    expect(screen.getByText('Generating...')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(global.fetch).toHaveBeenCalledWith('/api/reports/net-worth', expect.objectContaining({
+        headers: { Authorization: 'Bearer fake-token' }
+      }));
+    });
+
+    await waitFor(() => {
+         expect(screen.getByText('Download Report')).toBeInTheDocument();
+    });
   });
 });
