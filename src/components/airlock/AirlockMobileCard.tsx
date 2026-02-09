@@ -11,9 +11,9 @@ interface AirlockMobileCardProps {
 
 const getStatusColor = (status: TrafficLight | null) => {
   switch (status) {
-    case 'GREEN': return 'bg-green-100 text-green-800 border-green-200';
-    case 'YELLOW': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'RED': return 'bg-red-100 text-red-800 border-red-200';
+    case 'GREEN': return 'bg-[#10893E]/10 text-[#10893E] border-[#10893E]/20';
+    case 'YELLOW': return 'bg-[#F5A623]/10 text-[#F5A623] border-[#F5A623]/20';
+    case 'RED': return 'bg-[#D0021B]/10 text-[#D0021B] border-[#D0021B]/20';
     default: return 'bg-gray-100 text-gray-800 border-gray-200';
   }
 };
@@ -105,7 +105,7 @@ export function AirlockMobileCard({ item, onClick, onApprove, onRemove }: Airloc
             ${
               !isActionable
                 ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                : 'bg-green-100 text-green-700 hover:bg-green-200 active:bg-green-300'
+                : 'bg-[#10893E]/10 text-[#10893E] hover:bg-[#10893E]/20 active:bg-[#10893E]/30'
             }
           `}
           aria-label="Approve"
