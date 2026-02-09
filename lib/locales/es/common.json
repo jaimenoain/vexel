@@ -1,6 +1,15 @@
 {
-  "dashboard": "Tablero",
-  "airlock": "Esclusa",
-  "settings": "Ajustes",
-  "net_worth": "Patrimonio Neto"
+  "nav": {
+    "dashboard": "Tablero",
+    "airlock": "Esclusa",
+    "portfolio": "Portafolio",
+    "ledger": "Libro Mayor",
+    "directory": "Directorio",
+    "documents": "Documentos",
+    "governance": "Gobernanza",
+    "settings": "Ajustes"
+  },
+  "dashboard": {
+    "net_worth": "Patrimonio Neto"
+  }
 }

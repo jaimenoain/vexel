@@ -2,10 +2,12 @@
 
 import useSWR from 'swr';
 import { useAuth } from '@/app/context/AuthContext';
-import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
+import { formatCurrency } from '@/lib/formatting';
 
 export function NetWorthHero() {
   const { session } = useAuth();
+  const { t, i18n } = useTranslation();
 
   // Use inline fetcher to handle SWR args safely
   const { data: safeData, error: safeError, isLoading: safeLoading } = useSWR(
@@ -27,30 +29,20 @@ export function NetWorthHero() {
   if (safeError) {
     return (
       <div className="flex flex-col gap-2 p-6">
-        <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">Net Worth</h2>
+        <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">{t('dashboard.net_worth')}</h2>
         <p className="text-red-500">Error loading data</p>
       </div>
     );
   }
 
   const netWorth = safeData?.net_worth ?? 0;
-  // Format number with commas
-  const formattedValue = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(netWorth);
+  // Format number using formatCurrency
+  const formattedValue = formatCurrency(netWorth, 'USD', i18n.language);
 
   return (
     <div className="flex flex-col gap-2 p-6 group cursor-default">
-      <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">Net Worth</h2>
+      <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">{t('dashboard.net_worth')}</h2>
       <div className="flex flex-wrap items-baseline gap-2">
-        <span
-          className={clsx(
-            "text-2xl font-light text-[#111111] transition-opacity duration-200 opacity-0 group-hover:opacity-100 group-active:opacity-100"
-          )}
-        >
-          $
-        </span>
         <span className="text-4xl lg:text-5xl font-light text-[#111111] leading-tight tracking-tight break-words">
           {formattedValue}
         </span>

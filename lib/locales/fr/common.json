@@ -1,6 +1,15 @@
 {
-  "dashboard": "Tableau de bord",
-  "airlock": "Sas",
-  "settings": "Paramètres",
-  "net_worth": "Valeur Nette"
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "airlock": "Sas",
+    "portfolio": "Portefeuille",
+    "ledger": "Grand Livre",
+    "directory": "Annuaire",
+    "documents": "Documents",
+    "governance": "Gouvernance",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "net_worth": "Valeur Nette"
+  }
 }
