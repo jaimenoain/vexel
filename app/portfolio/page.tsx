@@ -13,7 +13,13 @@ export default function PortfolioPage() {
     session ? ['/api/directory', session.access_token] : null,
     ([url, token]: [string, string]) => fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(res => res.json())
+    }).then(async res => {
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.error || `Error ${res.status}: ${res.statusText}`);
+      }
+      return res.json();
+    })
   );
 
   return (
@@ -27,10 +33,10 @@ export default function PortfolioPage() {
           {error && (
             <div className="p-4 text-red-500">Error loading portfolio</div>
           )}
-          {data?.map((entity) => (
+          {Array.isArray(data) && data.map((entity) => (
             <EntityAccordion key={entity.id} entity={entity} />
           ))}
-          {data && data.length === 0 && (
+          {Array.isArray(data) && data.length === 0 && (
              <div className="p-4 text-gray-500 italic">No entities found.</div>
           )}
         </div>
