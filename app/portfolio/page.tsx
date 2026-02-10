@@ -5,6 +5,8 @@ import { useAuth } from '@/app/context/AuthContext';
 import { Shell } from '@/src/components/layout/Shell';
 import { EntityAccordion } from '@/src/components/portfolio/EntityAccordion';
 import { Entity } from '@/lib/types';
+import { Button } from '@/src/components/common/Button';
+import { Plus } from 'lucide-react';
 
 export default function PortfolioPage() {
   const { session } = useAuth();
@@ -16,10 +18,19 @@ export default function PortfolioPage() {
     }).then(res => res.json())
   );
 
+  const handleAddEntity = () => {
+    alert('Not implemented yet');
+  };
+
   return (
     <Shell>
       <div className="flex flex-col gap-6">
-        <h1 className="text-2xl font-bold tracking-tight text-[#111111]">Portfolio</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight text-[#111111]">Portfolio</h1>
+          <Button onClick={handleAddEntity} icon={<Plus className="h-4 w-4" />}>
+            Add Entity
+          </Button>
+        </div>
         <div className="border-t border-[#E5E5E5]">
           {isLoading && (
             <div className="p-4 text-gray-500 animate-pulse">Loading...</div>

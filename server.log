@@ -1,0 +1,21 @@
+
+> vexel-init@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1908ms
+○ Compiling /portfolio ...
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ GET /portfolio 200 in 5.2s (compile: 4.4s, proxy.ts: 143ms, render: 608ms)
+ GET /documents 200 in 1496ms (compile: 1346ms, proxy.ts: 14ms, render: 137ms)
+ GET /ledger 200 in 724ms (compile: 589ms, proxy.ts: 7ms, render: 128ms)
+ GET /governance 200 in 704ms (compile: 598ms, proxy.ts: 7ms, render: 99ms)
+ GET /directory 200 in 520ms (compile: 442ms, proxy.ts: 7ms, render: 71ms)
+✓ Compiled in 37ms
+[?25h
