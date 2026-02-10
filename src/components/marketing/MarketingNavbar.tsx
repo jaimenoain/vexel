@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export function MarketingNavbar() {
   return (
-    <nav className="w-full flex justify-between items-center py-6 px-8 sticky top-0 z-50 bg-transparent">
+    <nav className="w-full flex justify-between items-center py-6 px-8 sticky top-0 z-50 bg-transparent animate-fade-in-up">
       <div className="font-bold tracking-tight text-xl font-sans text-[#111111]">
         Vexel
       </div>

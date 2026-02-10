@@ -2,7 +2,7 @@ import React from 'react';
 
 export const FeatureGrid = () => {
   return (
-    <section className="w-full max-w-6xl mx-auto px-6 pb-32">
+    <section className="w-full max-w-6xl mx-auto px-6 pb-32 animate-fade-in-up delay-300">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Global Position - Spans 2 columns */}
         <div className="md:col-span-2 bg-white border border-zinc-200 p-8 rounded-lg">
