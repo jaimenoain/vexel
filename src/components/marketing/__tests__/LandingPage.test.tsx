@@ -16,4 +16,10 @@ describe('LandingPage', () => {
     const divElement = container.firstChild;
     expect(divElement).toHaveClass('flex', 'flex-col', 'min-h-screen', 'bg-background');
   });
+
+  it('renders the footer', () => {
+    render(<LandingPage />);
+    const footerElement = screen.getByRole('contentinfo');
+    expect(footerElement).toBeInTheDocument();
+  });
 });
