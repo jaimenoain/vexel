@@ -69,6 +69,7 @@ export interface LedgerLine {
   asset_id: string;
   amount: number;
   type: LedgerEntryType;
+  group_id?: string;
   asset?: Asset;
 }
 
