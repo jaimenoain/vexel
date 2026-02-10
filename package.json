@@ -12,6 +12,7 @@
     "@react-email/components": "^1.0.7",
     "@react-email/render": "^2.0.4",
     "@react-pdf/renderer": "^4.3.2",
+    "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.94.1",
     "clsx": "^2.1.1",
     "i18next": "^25.8.4",

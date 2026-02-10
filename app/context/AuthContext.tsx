@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session, AuthResponse, AuthError } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { Profile } from '@/lib/types';
+
+const supabase = createClient();
 
 type AuthCredentials = {
   email: string;
