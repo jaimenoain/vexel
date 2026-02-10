@@ -5,6 +5,7 @@ export interface UsageStatus {
   current_count: number;
   limit: number;
   is_over_limit: boolean;
+  plan_name: string;
 }
 
 export async function getUsageStatus(supabase: SupabaseClient): Promise<UsageStatus> {
@@ -24,5 +25,6 @@ export async function getUsageStatus(supabase: SupabaseClient): Promise<UsageSta
     current_count: currentCount,
     limit: FREE_TIER_LIMIT,
     is_over_limit: currentCount > FREE_TIER_LIMIT,
+    plan_name: 'Free Tier',
   };
 }

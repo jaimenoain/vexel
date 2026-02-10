@@ -13,6 +13,7 @@ const navItems = [
   { name: 'General', href: '/settings/general' },
   { name: 'Notifications', href: '/settings/notifications' },
   { name: 'Automation', href: '/settings/automation' },
+  { name: 'Billing', href: '/settings/billing' },
 ];
 
 export function SettingsLayout({ children }: SettingsLayoutProps) {
