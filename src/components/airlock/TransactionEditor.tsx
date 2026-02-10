@@ -17,6 +17,7 @@ interface TransactionEditorProps {
   confidence?: number;
   onSave?: (data: any) => void;
   onChange?: (data: TransactionRow[]) => void;
+  assetId?: string | null;
 }
 
 const initializeRows = (data: TransactionEditorProps['initialData']): TransactionRow[] => {
@@ -35,10 +36,10 @@ const initializeRows = (data: TransactionEditorProps['initialData']): Transactio
     return [];
 };
 
-export function TransactionEditor({ initialData, confidence = 0, onSave, onChange }: TransactionEditorProps) {
+export function TransactionEditor({ initialData, confidence = 0, onSave, onChange, assetId }: TransactionEditorProps) {
   const [rows, setRows] = useState<TransactionRow[]>(() => initializeRows(initialData));
   const [isEdited, setIsEdited] = useState(false);
-  const { status, errors } = useTransactionValidator(rows, confidence, isEdited);
+  const { status, errors } = useTransactionValidator(rows, confidence, isEdited, assetId);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
