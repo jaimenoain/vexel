@@ -45,3 +45,39 @@ export interface AirlockItem {
   traffic_light: TrafficLight | null;
   created_at: string;
 }
+
+export type GhostStatus = 'PENDING' | 'MATCHED' | 'OVERDUE' | 'VOIDED';
+
+export interface GhostEntry {
+  id: string;
+  asset_id: string;
+  expected_date: string;
+  expected_amount: number;
+  description: string;
+  recurrence_rule: string | null;
+  status: GhostStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export type LedgerEntryType = 'DEBIT' | 'CREDIT';
+
+export interface LedgerTransaction {
+  id: string;
+  description: string;
+  date: string;
+  external_reference_id: string | null;
+  created_at: string;
+}
+
+export interface LedgerLine {
+  id: string;
+  transaction_id: string;
+  asset_id: string;
+  amount: number;
+  type: LedgerEntryType;
+}
+
+export interface LedgerTransactionWithLines extends LedgerTransaction {
+  lines: (LedgerLine & { asset: Asset })[];
+}
