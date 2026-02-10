@@ -14,9 +14,11 @@ You can learn more, including how to opt-out if you'd not like to participate in
 https://nextjs.org/telemetry
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-✓ Ready in 1708ms
-○ Compiling /verify-ledger ...
+✓ Ready in 1782ms
+○ Compiling /login ...
 🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
- GET /verify-ledger 200 in 6.5s (compile: 5.4s, proxy.ts: 191ms, render: 875ms)
-✓ Compiled in 46ms
-[?25h
+ GET /login 200 in 6.0s (compile: 5.5s, proxy.ts: 10ms, render: 519ms)
+✓ Compiled in 47ms
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ GET /verify-landing 200 in 941ms (compile: 745ms, proxy.ts: 33ms, render: 163ms)
+✓ Compiled in 37ms
