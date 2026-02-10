@@ -38,6 +38,7 @@ describe('Usage API', () => {
       current_count: 3,
       limit: FREE_TIER_LIMIT,
       is_over_limit: false,
+      plan_name: 'Free Tier',
     });
   });
 
@@ -57,6 +58,7 @@ describe('Usage API', () => {
       current_count: 6,
       limit: FREE_TIER_LIMIT,
       is_over_limit: true,
+      plan_name: 'Free Tier',
     });
   });
 
@@ -76,6 +78,7 @@ describe('Usage API', () => {
       current_count: 5,
       limit: FREE_TIER_LIMIT,
       is_over_limit: false, // 5 is not > 5
+      plan_name: 'Free Tier',
     });
   });
 
