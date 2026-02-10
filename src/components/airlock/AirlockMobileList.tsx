@@ -28,7 +28,7 @@ function SkeletonCard() {
       </div>
 
       <div className="flex justify-between items-center">
-        <div className="h-3 w-3 rounded-full bg-gray-200"></div>
+        <div className="h-6 w-6 rounded-full bg-gray-200"></div>
       </div>
     </div>
   );

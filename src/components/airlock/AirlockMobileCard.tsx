@@ -1,5 +1,6 @@
 import React from 'react';
 import { AirlockItem, TrafficLight } from '@/lib/types';
+import { Check, CircleHelp, TriangleAlert } from 'lucide-react';
 
 interface AirlockMobileCardProps {
   item: AirlockItem;
@@ -14,6 +15,24 @@ const getStatusColor = (status: TrafficLight | null) => {
     case 'YELLOW': return 'bg-[#F5A623]';
     case 'RED': return 'bg-[#D0021B]';
     default: return 'bg-gray-300';
+  }
+};
+
+const getStatusIcon = (status: TrafficLight | null) => {
+  switch (status) {
+    case 'GREEN': return Check;
+    case 'YELLOW': return CircleHelp;
+    case 'RED': return TriangleAlert;
+    default: return null;
+  }
+};
+
+const getStatusIconColor = (status: TrafficLight | null) => {
+  switch (status) {
+    case 'GREEN': return 'text-white';
+    case 'YELLOW': return 'text-black'; // High contrast against yellow
+    case 'RED': return 'text-white';
+    default: return 'text-gray-500';
   }
 };
 
@@ -48,6 +67,9 @@ const getDate = (item: AirlockItem): string => {
 
 export function AirlockMobileCard({ item, onClick, isSelected, isExiting }: AirlockMobileCardProps) {
   const statusColor = getStatusColor(item.traffic_light);
+  const Icon = getStatusIcon(item.traffic_light);
+  const iconColor = getStatusIconColor(item.traffic_light);
+
   const vendor = getVendorName(item);
   const amount = getAmount(item);
   const date = getDate(item);
@@ -73,8 +95,10 @@ export function AirlockMobileCard({ item, onClick, isSelected, isExiting }: Airl
       <div className="flex justify-between items-center">
         <div
           data-testid="status-indicator"
-          className={`h-3 w-3 rounded-full ${statusColor}`}
-        />
+          className={`h-6 w-6 rounded-full flex items-center justify-center ${statusColor} ${iconColor}`}
+        >
+          {Icon && <Icon size={14} data-testid="status-icon" strokeWidth={3} />}
+        </div>
       </div>
     </div>
   );
