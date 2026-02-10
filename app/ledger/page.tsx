@@ -1,26 +1,25 @@
-'use client';
-
-import React from 'react';
+import { createClient } from '@/lib/supabase/server';
+import { getGhostEntries, getLedgerHistory } from '@/lib/ledger/service';
 import { Shell } from '@/src/components/layout/Shell';
-import { Button } from '@/src/components/common/Button';
-import { Plus } from 'lucide-react';
+import { LedgerHorizon } from '@/src/components/ledger/LedgerHorizon';
+import { LedgerHistory } from '@/src/components/ledger/LedgerHistory';
+import { LedgerHeader } from '@/src/components/ledger/LedgerHeader';
 
-export default function LedgerPage() {
-  const handleAddTransaction = () => {
-    alert('Not implemented yet');
-  };
+export default async function LedgerPage() {
+  const supabase = await createClient();
+
+  // Fetch data
+  const ghostEntries = await getGhostEntries(supabase);
+  const ledgerHistory = await getLedgerHistory(supabase);
 
   return (
     <Shell>
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-[#111111]">Ledger</h1>
-          <Button onClick={handleAddTransaction} icon={<Plus className="h-4 w-4" />}>
-            Add Transaction
-          </Button>
-        </div>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-zinc-500 border-t border-[#E5E5E5]">
-          <p>Module under construction.</p>
+      <div className="flex flex-col gap-0 min-h-screen pb-12">
+        <LedgerHeader />
+
+        <div className="flex flex-col border border-black shadow-sm bg-white">
+          <LedgerHorizon ghostEntries={ghostEntries} />
+          <LedgerHistory transactions={ledgerHistory} />
         </div>
       </div>
     </Shell>
