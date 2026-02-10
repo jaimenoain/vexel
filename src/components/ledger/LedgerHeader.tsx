@@ -1,12 +1,20 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/src/components/common/Button';
 import { Plus } from 'lucide-react';
+import { ManualTransactionModal } from '@/src/components/ledger/ManualTransactionModal';
+import { Asset } from '@/lib/types';
 
-export function LedgerHeader() {
+interface LedgerHeaderProps {
+  assets?: Pick<Asset, 'id' | 'name' | 'currency'>[];
+}
+
+export function LedgerHeader({ assets = [] }: LedgerHeaderProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const handleAddTransaction = () => {
-    alert('Not implemented yet');
+    setIsModalOpen(true);
   };
 
   return (
@@ -19,6 +27,12 @@ export function LedgerHeader() {
       >
         Add Transaction
       </Button>
+
+      <ManualTransactionModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        assets={assets}
+      />
     </div>
   );
 }
