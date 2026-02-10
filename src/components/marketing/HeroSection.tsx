@@ -1,4 +1,5 @@
 import React from 'react';
+import { MagneticButton } from './MagneticButton';
 
 export const HeroSection = () => {
   return (
@@ -9,11 +10,13 @@ export const HeroSection = () => {
       <p className="text-lg text-zinc-500 max-w-2xl mb-10">
         The operating system for your global capital. Track, manage, and govern entities and assets in one glass cockpit.
       </p>
-      <button
-        className="bg-foreground text-background hover:bg-foreground/90 rounded-md px-8 py-6 text-lg font-medium transition-colors"
-      >
-        Initialize System
-      </button>
+      <MagneticButton>
+        <button
+          className="bg-foreground text-background hover:bg-foreground/90 rounded-md px-8 py-6 text-lg font-medium transition-colors"
+        >
+          Initialize System
+        </button>
+      </MagneticButton>
     </section>
   );
 };
