@@ -37,7 +37,7 @@ export type TrafficLight = 'RED' | 'YELLOW' | 'GREEN';
 
 export interface AirlockItem {
   id: string;
-  asset_id: string;
+  asset_id: string | null;
   file_path: string;
   status: AirlockStatus;
   ai_payload: Record<string, any>;
