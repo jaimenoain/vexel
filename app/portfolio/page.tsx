@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import useSWR from 'swr';
 import { useAuth } from '@/app/context/AuthContext';
 import { Shell } from '@/src/components/layout/Shell';
@@ -7,9 +8,11 @@ import { EntityAccordion } from '@/src/components/portfolio/EntityAccordion';
 import { Entity } from '@/lib/types';
 import { Button } from '@/src/components/common/Button';
 import { Plus } from 'lucide-react';
+import { AssetCreationModal } from '@/src/components/portfolio/AssetCreationModal';
 
 export default function PortfolioPage() {
   const { session } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, error, isLoading } = useSWR<Entity[]>(
     session ? ['/api/directory', session.access_token] : null,
@@ -25,7 +28,7 @@ export default function PortfolioPage() {
   );
 
   const handleAddEntity = () => {
-    alert('Not implemented yet');
+    setIsModalOpen(true);
   };
 
   return (
@@ -52,6 +55,10 @@ export default function PortfolioPage() {
           )}
         </div>
       </div>
+      <AssetCreationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </Shell>
   );
 }
