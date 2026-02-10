@@ -122,4 +122,23 @@ describe('AirlockMobileList', () => {
 
     expect(mockOnItemClick).toHaveBeenCalledWith(mockItems[0]);
   });
+
+  it('renders empty state correctly', () => {
+    const mockOnUpload = jest.fn();
+    render(
+      <AirlockMobileList
+        items={[]}
+        onItemClick={mockOnItemClick}
+        onApprove={mockOnApprove}
+        onRemove={mockOnRemove}
+        onUpload={mockOnUpload}
+      />
+    );
+
+    expect(screen.getByText('All Systems Nominal. No pending data.')).toBeInTheDocument();
+    expect(screen.getByText('Upload Document')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Upload Document'));
+    expect(mockOnUpload).toHaveBeenCalled();
+  });
 });
