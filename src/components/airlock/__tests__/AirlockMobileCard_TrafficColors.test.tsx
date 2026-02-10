@@ -39,10 +39,8 @@ describe('AirlockMobileCard Traffic Colors', () => {
       />
     );
 
-    const statusBadge = screen.getByText('GREEN');
-    expect(statusBadge).toHaveClass('text-[#10893E]');
-    expect(statusBadge).toHaveClass('bg-[#10893E]/10');
-    expect(statusBadge).toHaveClass('border-[#10893E]/20');
+    const statusBadge = screen.getByTestId('status-indicator');
+    expect(statusBadge).toHaveClass('bg-[#10893E]');
   });
 
   it('renders correctly with YELLOW status and specific hex color classes', () => {
@@ -54,10 +52,8 @@ describe('AirlockMobileCard Traffic Colors', () => {
       />
     );
 
-    const statusBadge = screen.getByText('YELLOW');
-    expect(statusBadge).toHaveClass('text-[#F5A623]');
-    expect(statusBadge).toHaveClass('bg-[#F5A623]/10');
-    expect(statusBadge).toHaveClass('border-[#F5A623]/20');
+    const statusBadge = screen.getByTestId('status-indicator');
+    expect(statusBadge).toHaveClass('bg-[#F5A623]');
   });
 
   it('renders correctly with RED status and specific hex color classes', () => {
@@ -69,9 +65,7 @@ describe('AirlockMobileCard Traffic Colors', () => {
       />
     );
 
-    const statusBadge = screen.getByText('RED');
-    expect(statusBadge).toHaveClass('text-[#D0021B]');
-    expect(statusBadge).toHaveClass('bg-[#D0021B]/10');
-    expect(statusBadge).toHaveClass('border-[#D0021B]/20');
+    const statusBadge = screen.getByTestId('status-indicator');
+    expect(statusBadge).toHaveClass('bg-[#D0021B]');
   });
 });

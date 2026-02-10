@@ -39,7 +39,7 @@ describe('AirlockMobileCard', () => {
 
     expect(screen.getByText('Test Vendor')).toBeInTheDocument();
     expect(screen.getByText('10.00')).toBeInTheDocument();
-    expect(screen.getByText('YELLOW')).toBeInTheDocument();
+    expect(screen.getByTestId('status-indicator')).toBeInTheDocument();
   });
 
   it('applies selected styles when isSelected is true', () => {

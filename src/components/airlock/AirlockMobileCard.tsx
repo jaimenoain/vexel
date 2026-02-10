@@ -10,10 +10,10 @@ interface AirlockMobileCardProps {
 
 const getStatusColor = (status: TrafficLight | null) => {
   switch (status) {
-    case 'GREEN': return 'bg-[#10893E]/10 text-[#10893E] border-[#10893E]/20';
-    case 'YELLOW': return 'bg-[#F5A623]/10 text-[#F5A623] border-[#F5A623]/20';
-    case 'RED': return 'bg-[#D0021B]/10 text-[#D0021B] border-[#D0021B]/20';
-    default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    case 'GREEN': return 'bg-[#10893E]';
+    case 'YELLOW': return 'bg-[#F5A623]';
+    case 'RED': return 'bg-[#D0021B]';
+    default: return 'bg-gray-300';
   }
 };
 
@@ -71,9 +71,10 @@ export function AirlockMobileCard({ item, onClick, isSelected, isExiting }: Airl
       </div>
 
       <div className="flex justify-between items-center">
-        <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${statusColor}`}>
-          {item.traffic_light || 'PENDING'}
-        </span>
+        <div
+          data-testid="status-indicator"
+          className={`h-3 w-3 rounded-full ${statusColor}`}
+        />
       </div>
     </div>
   );
