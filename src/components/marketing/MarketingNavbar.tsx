@@ -9,7 +9,7 @@ export function MarketingNavbar() {
       </div>
       <Link
         href="/login"
-        className="inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 h-10 px-4 text-sm bg-transparent text-[#111111] hover:bg-gray-100 focus:ring-gray-200"
+        className="inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 h-10 px-4 text-sm text-zinc-500 hover:text-foreground focus:ring-gray-200"
       >
         Sign In
       </Link>
