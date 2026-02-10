@@ -1,8 +1,18 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BottomTabs } from '../BottomTabs';
+import { useAirlockUpload } from '@/src/hooks/useAirlockUpload';
+
+jest.mock('@/src/hooks/useAirlockUpload');
 
 describe('BottomTabs', () => {
+  beforeEach(() => {
+    (useAirlockUpload as jest.Mock).mockReturnValue({
+      uploadFile: jest.fn(),
+      isUploading: false,
+    });
+  });
+
   it('renders correctly with existing tabs', () => {
     render(<BottomTabs />);
 
@@ -39,8 +49,13 @@ describe('BottomTabs', () => {
     expect(clickSpy).toHaveBeenCalled();
   });
 
-  it('logs file selection on change', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  it('calls uploadFile on file selection', async () => {
+    const mockUploadFile = jest.fn();
+    (useAirlockUpload as jest.Mock).mockReturnValue({
+      uploadFile: mockUploadFile,
+      isUploading: false,
+    });
+
     render(<BottomTabs />);
 
     const fileInput = screen.getByTestId('file-upload-input');
@@ -49,7 +64,8 @@ describe('BottomTabs', () => {
 
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    expect(consoleSpy).toHaveBeenCalledWith('File selected:', 'test-file.png');
-    consoleSpy.mockRestore();
+    await waitFor(() => {
+      expect(mockUploadFile).toHaveBeenCalledWith(file);
+    });
   });
 });

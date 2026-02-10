@@ -46,7 +46,7 @@ describe('Home Routing', () => {
     });
 
     const { container } = render(<Home />);
-    expect(container).toBeEmptyDOMElement();
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
   test('Case 2 (Unauthenticated): renders LandingPage when user is null', () => {
