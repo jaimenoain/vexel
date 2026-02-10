@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { AirlockItem } from '@/lib/types';
 import { AirlockMobileCard } from './AirlockMobileCard';
-import { Check, Edit, Loader2 } from 'lucide-react';
+import { Check, Edit, Loader2, ShieldCheck } from 'lucide-react';
 
 interface AirlockMobileListProps {
   items: AirlockItem[];
   onItemClick: (item: AirlockItem) => void;
   onApprove: (id: string) => Promise<void>;
   onRemove: (id: string) => void;
+  onUpload?: () => void;
 }
 
-export function AirlockMobileList({ items, onItemClick, onApprove, onRemove }: AirlockMobileListProps) {
+export function AirlockMobileList({ items, onItemClick, onApprove, onRemove, onUpload }: AirlockMobileListProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
@@ -56,8 +57,15 @@ export function AirlockMobileList({ items, onItemClick, onApprove, onRemove }: A
 
   if (!items || items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
-        <p>No items in the queue.</p>
+      <div className="flex flex-col items-center justify-center h-64 text-center">
+        <ShieldCheck className="w-12 h-12 text-gray-300 mb-4" />
+        <p className="text-gray-500 font-medium mb-6">All Systems Nominal. No pending data.</p>
+        <button
+          onClick={onUpload}
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium transition-colors"
+        >
+          Upload Document
+        </button>
       </div>
     );
   }
