@@ -22,6 +22,7 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/lib/formatting', () => ({
   formatCurrency: jest.fn(),
+  formatCurrencyParts: jest.fn(),
 }));
 
 describe('NetWorthHero', () => {
@@ -42,7 +43,9 @@ describe('NetWorthHero', () => {
         language: 'en',
       },
     });
+    const { formatCurrency, formatCurrencyParts } = require('@/lib/formatting');
     (formatCurrency as jest.Mock).mockReturnValue('$1,000.00');
+    (formatCurrencyParts as jest.Mock).mockReturnValue({ symbol: '$', value: '1,000.00' });
   });
 
   it('renders loading state', () => {
@@ -71,9 +74,10 @@ describe('NetWorthHero', () => {
     render(<NetWorthHero />);
 
     expect(screen.getByText('Net Worth Translated')).toBeInTheDocument();
-    expect(screen.getByText('$1,000.00')).toBeInTheDocument();
+    expect(screen.getByText('1,000.00')).toBeInTheDocument();
 
-    expect(formatCurrency).toHaveBeenCalledWith(1000, 'USD', 'en');
+    const { formatCurrencyParts } = require('@/lib/formatting');
+    expect(formatCurrencyParts).toHaveBeenCalledWith(1000, 'USD', 'en');
   });
 
   it('triggers report generation on button click', async () => {

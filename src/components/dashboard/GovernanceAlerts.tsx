@@ -63,7 +63,7 @@ export function GovernanceAlerts() {
       <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">Governance Alerts</h2>
 
       <div className="flex items-baseline gap-2 mb-4">
-        <span className={`text-6xl md:text-7xl font-light leading-none tracking-tight ${alertCount > 0 ? 'text-red-600' : 'text-[#111111]'}`}>
+        <span className={`text-6xl md:text-7xl font-light font-mono leading-none tracking-tight ${alertCount > 0 ? 'text-red-600' : 'text-[#111111]'}`}>
           {alertCount}
         </span>
         <span className="text-xl text-[#111111] font-light">alerts</span>
