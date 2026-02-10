@@ -9,9 +9,32 @@ interface AirlockMobileListProps {
   onApprove: (id: string) => Promise<void>;
   onRemove: (id: string) => void;
   onUpload?: () => void;
+  isLoading?: boolean;
 }
 
-export function AirlockMobileList({ items, onItemClick, onApprove, onRemove, onUpload }: AirlockMobileListProps) {
+function SkeletonCard() {
+  return (
+    <div
+      data-testid="skeleton-card"
+      className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-3 animate-pulse"
+    >
+      <div className="flex justify-between items-start mb-2">
+        <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+      </div>
+
+      <div className="flex justify-between items-center mb-3">
+        <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <div className="h-3 w-3 rounded-full bg-gray-200"></div>
+      </div>
+    </div>
+  );
+}
+
+export function AirlockMobileList({ items, onItemClick, onApprove, onRemove, onUpload, isLoading }: AirlockMobileListProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
@@ -54,6 +77,18 @@ export function AirlockMobileList({ items, onItemClick, onApprove, onRemove, onU
 
   const selectedItem = items.find(i => i.id === selectedId);
   const isActionable = selectedItem && selectedItem.traffic_light !== 'RED';
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-full pb-32">
+        <div className="p-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!items || items.length === 0) {
     return (

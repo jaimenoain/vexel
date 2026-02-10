@@ -141,4 +141,20 @@ describe('AirlockMobileList', () => {
     fireEvent.click(screen.getByText('Upload Document'));
     expect(mockOnUpload).toHaveBeenCalled();
   });
+
+  it('displays skeleton loader when isLoading is true', () => {
+    render(
+      <AirlockMobileList
+        items={[]}
+        isLoading={true}
+        onItemClick={mockOnItemClick}
+        onApprove={mockOnApprove}
+        onRemove={mockOnRemove}
+      />
+    );
+
+    const skeletons = screen.getAllByTestId('skeleton-card');
+    expect(skeletons).toHaveLength(5);
+    expect(screen.queryByText('All Systems Nominal. No pending data.')).not.toBeInTheDocument();
+  });
 });
