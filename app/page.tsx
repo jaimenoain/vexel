@@ -11,7 +11,11 @@ export default function Home() {
   const { selectedScope } = useVexelContext();
 
   if (loading) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+      </div>
+    );
   }
 
   if (!user) {
