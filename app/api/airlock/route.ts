@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('airlock_items')
-    .select('id, status, traffic_light, confidence_score, ai_payload, created_at');
+    .select('id, status, traffic_light, confidence_score, ai_payload, created_at, file_path');
 
   if (assetId) {
     query = query.eq('asset_id', assetId);
