@@ -7,7 +7,13 @@ import { AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 const fetcher = (url: string, token: string) =>
-  fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then((res) => res.json());
+  fetch(url, { headers: { Authorization: `Bearer ${token}` } }).then(async (res) => {
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.error || `Error ${res.status}: ${res.statusText}`);
+    }
+    return res.json();
+  });
 
 export function PlanLimitBanner() {
   const { session } = useAuth();
