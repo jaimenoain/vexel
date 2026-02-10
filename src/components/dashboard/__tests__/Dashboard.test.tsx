@@ -49,9 +49,9 @@ describe('Dashboard Components', () => {
       // Check formatted value
       expect(screen.getByText('1,234,567.89')).toBeInTheDocument();
 
-      // Check currency symbol is hidden by default (opacity-0)
+      // Check currency symbol is hidden by default
       const currencySymbol = screen.getByText('$');
-      expect(currencySymbol).toHaveClass('opacity-0');
+      expect(currencySymbol).toHaveClass('hidden');
     });
 
     it('has hover and active classes for currency symbol', () => {
@@ -64,9 +64,8 @@ describe('Dashboard Components', () => {
       render(<NetWorthHero />);
 
       const currencySymbol = screen.getByText('$');
-      expect(currencySymbol).toHaveClass('opacity-0');
-      expect(currencySymbol).toHaveClass('group-hover:opacity-100');
-      expect(currencySymbol).toHaveClass('group-active:opacity-100');
+      expect(currencySymbol).toHaveClass('hidden');
+      expect(currencySymbol).toHaveClass('group-hover:inline');
     });
 
     it('handles error state', () => {

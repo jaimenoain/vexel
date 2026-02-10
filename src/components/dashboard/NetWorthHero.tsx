@@ -86,7 +86,7 @@ export function NetWorthHero() {
         </button>
       </div>
       <div className="flex flex-wrap items-baseline gap-2">
-        <div className="text-4xl lg:text-5xl font-light text-[#111111] leading-tight tracking-tight break-words flex items-baseline">
+        <div className="text-4xl lg:text-5xl font-light font-mono text-[#111111] leading-tight tracking-tight break-words flex items-baseline">
           <span className="hidden group-hover:inline mr-2 transition-all duration-200">{symbol}</span>
           <span>{value}</span>
         </div>

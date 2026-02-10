@@ -45,7 +45,7 @@ export function PendingActions() {
     <div className="flex flex-col gap-2 p-6">
       <h2 className="text-lg font-bold text-[#111111] uppercase tracking-wide">Pending Actions</h2>
       <div className="flex items-baseline gap-2">
-        <span className="text-6xl md:text-7xl font-light text-[#111111] leading-none tracking-tight">
+        <span className="text-6xl md:text-7xl font-light font-mono text-[#111111] leading-none tracking-tight">
           {pendingCount}
         </span>
         <span className="text-xl text-[#111111] font-light">items</span>
