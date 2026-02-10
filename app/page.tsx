@@ -3,9 +3,20 @@
 import { Shell } from "@/src/components/layout/Shell";
 import { useVexelContext } from "@/app/context/VexelContext";
 import { DashboardPage } from "@/src/components/dashboard/DashboardPage";
+import { useAuth } from "@/app/context/AuthContext";
+import LandingPage from "@/src/components/marketing/LandingPage";
 
 export default function Home() {
+  const { user, loading } = useAuth();
   const { selectedScope } = useVexelContext();
+
+  if (loading) {
+    return null;
+  }
+
+  if (!user) {
+    return <LandingPage />;
+  }
 
   return (
     <Shell>

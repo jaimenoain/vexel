@@ -12,6 +12,7 @@ export async function middleware(request: NextRequest) {
   // 2. Define Public Routes
   // Exclude static assets is handled by config matcher, but we also exclude specific paths here
   const isPublicRoute =
+    path === '/' ||
     path === '/login' ||
     path === '/signup' ||
     path.startsWith('/api/auth') ||
