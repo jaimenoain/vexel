@@ -4,13 +4,14 @@ import React, { useState } from 'react';
 import { Button } from '@/src/components/common/Button';
 import { Plus } from 'lucide-react';
 import { ManualTransactionModal } from '@/src/components/ledger/ManualTransactionModal';
-import { Asset } from '@/lib/types';
+import { Asset, Contact } from '@/lib/types';
 
 interface LedgerHeaderProps {
   assets?: Pick<Asset, 'id' | 'name' | 'currency'>[];
+  contacts?: Contact[];
 }
 
-export function LedgerHeader({ assets = [] }: LedgerHeaderProps) {
+export function LedgerHeader({ assets = [], contacts = [] }: LedgerHeaderProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAddTransaction = () => {
@@ -32,6 +33,7 @@ export function LedgerHeader({ assets = [] }: LedgerHeaderProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         assets={assets}
+        contacts={contacts}
       />
     </div>
   );

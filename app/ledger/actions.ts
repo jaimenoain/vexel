@@ -12,6 +12,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
   const amountStr = formData.get('amount') as string;
   const sourceAssetId = formData.get('sourceAssetId') as string;
   const destAssetId = formData.get('destAssetId') as string;
+  const contactId = formData.get('contactId') as string;
 
   // Validation
   if (!description || !date || !amountStr || !sourceAssetId || !destAssetId) {
@@ -31,6 +32,7 @@ export async function addTransaction(prevState: any, formData: FormData) {
     await createManualTransaction(supabase, {
       description,
       date,
+      contactId: contactId || null,
       lines: [
         // Destination (Debit) - Increases Asset/Expense
         {

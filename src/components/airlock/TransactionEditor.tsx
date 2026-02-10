@@ -5,6 +5,8 @@ import { Plus, Trash2, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-re
 import { ExtractedData } from '@/lib/ai/types';
 import { useTransactionValidator } from '@/src/hooks/useTransactionValidator';
 import { SimpleToast } from '@/src/components/common/SimpleToast';
+import { createClient } from '@/lib/supabase/client';
+import { Contact } from '@/lib/types';
 
 export interface TransactionRow extends Omit<ExtractedData, 'amount'> {
   id: string; // Unique ID for React keys
@@ -17,7 +19,9 @@ interface TransactionEditorProps {
   confidence?: number;
   onSave?: (data: any) => void;
   onChange?: (data: TransactionRow[]) => void;
+  onContactChange?: (contactId: string | null) => void; // New prop
   assetId?: string | null;
+  contactId?: string | null;
 }
 
 const initializeRows = (data: TransactionEditorProps['initialData']): TransactionRow[] => {
@@ -36,12 +40,22 @@ const initializeRows = (data: TransactionEditorProps['initialData']): Transactio
     return [];
 };
 
-export function TransactionEditor({ initialData, confidence = 0, onSave, onChange, assetId }: TransactionEditorProps) {
+export function TransactionEditor({ initialData, confidence = 0, onSave, onChange, onContactChange, assetId, contactId: initialContactId }: TransactionEditorProps) {
   const [rows, setRows] = useState<TransactionRow[]>(() => initializeRows(initialData));
+  const [contactId, setContactId] = useState<string | null>(initialContactId || null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [isEdited, setIsEdited] = useState(false);
   const { status, errors } = useTransactionValidator(rows, confidence, isEdited, assetId);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+
+  // Fetch contacts
+  useEffect(() => {
+      const supabase = createClient();
+      supabase.from('contacts').select('*').order('name').then(({ data }) => {
+          if (data) setContacts(data as Contact[]);
+      });
+  }, []);
 
   // Notify parent of changes
   useEffect(() => {
@@ -83,6 +97,13 @@ export function TransactionEditor({ initialData, confidence = 0, onSave, onChang
       return row;
     }));
     setIsEdited(true);
+  };
+
+  const handleContactChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const newVal = e.target.value || null;
+      setContactId(newVal);
+      setIsEdited(true);
+      onContactChange?.(newVal);
   };
 
   const net = rows.reduce((sum, r) => {
@@ -143,9 +164,24 @@ export function TransactionEditor({ initialData, confidence = 0, onSave, onChang
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="space-y-2">
+        <div className="space-y-4">
+            {/* Payee / Payer Dropdown */}
+            <div>
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Payee / Payer</label>
+              <select
+                  value={contactId || ''}
+                  onChange={handleContactChange}
+                  className="w-full text-sm border-gray-200 rounded-md focus:ring-black focus:border-black appearance-none bg-white py-2 px-3 border shadow-sm"
+              >
+                  <option value="">None</option>
+                  {contacts.map(c => (
+                      <option key={c.id} value={c.id}>{c.name} {c.role ? `(${c.role})` : ''}</option>
+                  ))}
+              </select>
+            </div>
+
             {/* Header Row */}
-            <div className="hidden md:grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-2">
+            <div className="hidden md:grid grid-cols-12 gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider px-2">
                 <div className="col-span-3">Date</div>
                 <div className="col-span-4">Description</div>
                 <div className="col-span-2 text-right">Amount</div>

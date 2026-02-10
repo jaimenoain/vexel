@@ -32,6 +32,15 @@ export interface Entity {
   assets: Asset[];
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  role: string | null;
+  email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export type AirlockStatus = 'QUEUED' | 'PROCESSING' | 'REVIEW_NEEDED' | 'READY_TO_COMMIT' | 'ERROR';
 export type TrafficLight = 'RED' | 'YELLOW' | 'GREEN';
 
@@ -44,6 +53,8 @@ export interface AirlockItem {
   confidence_score: number | null;
   traffic_light: TrafficLight | null;
   created_at: string;
+  contact_id?: string | null;
+  contact?: Contact | null;
 }
 
 export type GhostStatus = 'PENDING' | 'MATCHED' | 'OVERDUE' | 'VOIDED';
@@ -80,6 +91,8 @@ export interface LedgerTransaction {
   external_reference_id?: string | null;
   created_at: string;
   lines: LedgerLine[];
+  contact_id?: string | null;
+  contact?: Contact | null;
 }
 
 export interface GroupedTransaction {
