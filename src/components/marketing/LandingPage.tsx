@@ -1,6 +1,7 @@
 import React from 'react';
 import { MarketingNavbar } from './MarketingNavbar';
 import { HeroSection } from './HeroSection';
+import { MarketingFooter } from './MarketingFooter';
 
 export default function LandingPage() {
   return (
@@ -9,6 +10,7 @@ export default function LandingPage() {
       <main className="flex-1">
         <HeroSection />
       </main>
+      <MarketingFooter />
     </div>
   );
 }
