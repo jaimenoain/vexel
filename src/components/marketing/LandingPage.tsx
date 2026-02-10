@@ -1,6 +1,7 @@
 import React from 'react';
 import { MarketingNavbar } from './MarketingNavbar';
 import { HeroSection } from './HeroSection';
+import { FeatureGrid } from './FeatureGrid';
 import { MarketingFooter } from './MarketingFooter';
 
 export default function LandingPage() {
@@ -9,6 +10,7 @@ export default function LandingPage() {
       <MarketingNavbar />
       <main className="flex-1">
         <HeroSection />
+        <FeatureGrid />
       </main>
       <MarketingFooter />
     </div>
