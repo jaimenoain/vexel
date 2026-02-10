@@ -99,7 +99,12 @@ export const processDocumentHandler = async ({ event, step }: { event: DocumentU
 
       // Determine Traffic Light status
       const payload = { transactions: extractionData };
-      const trafficLightStatus = gradeAirlockItem(payload, confidenceScore);
+      const gradingResult = gradeAirlockItem(payload, confidenceScore, asset_id);
+
+      // Override confidence if grading says LOW
+      if (gradingResult.confidence === 'LOW') {
+        confidenceScore = 0.0;
+      }
 
       const { error } = await supabaseAdmin
         .from('airlock_items')
@@ -107,7 +112,7 @@ export const processDocumentHandler = async ({ event, step }: { event: DocumentU
           status: 'REVIEW_NEEDED',
           ai_payload: payload,
           confidence_score: confidenceScore,
-          traffic_light: trafficLightStatus
+          traffic_light: gradingResult.status
         })
         .eq('id', resolvedItemId);
 

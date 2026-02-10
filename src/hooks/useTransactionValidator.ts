@@ -13,7 +13,8 @@ interface ValidationResult {
 export function useTransactionValidator(
   transactions: TransactionRow[],
   initialConfidence: number = 0,
-  isEdited: boolean = false
+  isEdited: boolean = false,
+  assetId?: string | null
 ): ValidationResult {
   return useMemo(() => {
     // 1. Convert TransactionRow to ExtractedData
@@ -30,10 +31,16 @@ export function useTransactionValidator(
     const effectiveConfidence = isEdited ? 1.0 : initialConfidence;
 
     // 3. Grade
-    const status = gradeAirlockItem({ transactions: extractedData }, effectiveConfidence);
+    const gradingResult = gradeAirlockItem({ transactions: extractedData }, effectiveConfidence, assetId);
+    const status = gradingResult.status;
 
     // 4. Generate errors based on status/data
     const errors: string[] = [];
+
+    if (gradingResult.message && status === 'RED') {
+      errors.push(gradingResult.message);
+    }
+
     if (status === 'RED') {
         // Check balance
         const sum = extractedData.reduce((acc, tx) => acc + tx.amount, 0);
@@ -64,5 +71,5 @@ export function useTransactionValidator(
       errors
     };
 
-  }, [transactions, initialConfidence, isEdited]);
+  }, [transactions, initialConfidence, isEdited, assetId]);
 }

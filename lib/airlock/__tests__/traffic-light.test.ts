@@ -11,6 +11,28 @@ jest.mock('../../supabase-admin', () => ({
 describe('Traffic Light Service', () => {
   describe('gradeAirlockItem - Verification Checklist', () => {
 
+    // 0. Test Case: Missing Asset ID
+    it('should return RED with message for Missing Asset ID', () => {
+      const payload = {
+        transactions: [
+          { amount: 100, date: '2023-01-01', currency: 'USD', description: 'Debit', confidence: 0.99 },
+          { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
+        ]
+      };
+      // No assetId passed
+      expect(gradeAirlockItem(payload, 0.99)).toEqual({
+        status: 'RED',
+        confidence: 'LOW',
+        message: 'Unknown Asset. Please assign manually.'
+      });
+      // Explicit null
+      expect(gradeAirlockItem(payload, 0.99, null)).toEqual({
+        status: 'RED',
+        confidence: 'LOW',
+        message: 'Unknown Asset. Please assign manually.'
+      });
+    });
+
     // 1. Test Case: Unbalanced Transaction
     // Mock a payload where Debits = 100 and Credits = 90. Assert result is RED.
     it('should return RED for Unbalanced Transaction (Debits=100, Credits=90)', () => {
@@ -21,7 +43,7 @@ describe('Traffic Light Service', () => {
         ]
       };
       // Net sum = 10 -> RED
-      expect(gradeAirlockItem(payload, 0.99)).toBe('RED');
+      expect(gradeAirlockItem(payload, 0.99, 'asset-123').status).toBe('RED');
     });
 
     // 2. Test Case: Missing Date
@@ -33,7 +55,7 @@ describe('Traffic Light Service', () => {
           { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
         ]
       };
-      expect(gradeAirlockItem(payload, 0.99)).toBe('RED');
+      expect(gradeAirlockItem(payload, 0.99, 'asset-123').status).toBe('RED');
     });
 
     // 3. Test Case: Low Confidence
@@ -46,7 +68,7 @@ describe('Traffic Light Service', () => {
         ]
       };
       // Passed confidence_score is 0.85
-      expect(gradeAirlockItem(payload, 0.85)).toBe('YELLOW');
+      expect(gradeAirlockItem(payload, 0.85, 'asset-123').status).toBe('YELLOW');
     });
 
     // 4. Test Case: The Happy Path
@@ -58,7 +80,7 @@ describe('Traffic Light Service', () => {
           { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
         ]
       };
-      expect(gradeAirlockItem(payload, 0.99)).toBe('GREEN');
+      expect(gradeAirlockItem(payload, 0.99, 'asset-123').status).toBe('GREEN');
     });
 
     // 5. Test Case: Edge Case
@@ -74,16 +96,16 @@ describe('Traffic Light Service', () => {
           { amount: -0.3, date: '2023-01-01', currency: 'USD', description: 'Total', confidence: 0.99 }
         ]
       };
-      expect(gradeAirlockItem(payload, 0.99)).toBe('GREEN');
+      expect(gradeAirlockItem(payload, 0.99, 'asset-123').status).toBe('GREEN');
     });
 
   });
 
   describe('Additional Robustness Tests', () => {
     it('should return RED if payload is malformed', () => {
-      expect(gradeAirlockItem({} as any, 0.95)).toBe('RED');
-      expect(gradeAirlockItem(null as any, 0.95)).toBe('RED');
-      expect(gradeAirlockItem({ transactions: 'not-an-array' } as any, 0.95)).toBe('RED');
+      expect(gradeAirlockItem({} as any, 0.95, 'asset-123').status).toBe('RED');
+      expect(gradeAirlockItem(null as any, 0.95, 'asset-123').status).toBe('RED');
+      expect(gradeAirlockItem({ transactions: 'not-an-array' } as any, 0.95, 'asset-123').status).toBe('RED');
     });
 
     it('should return RED if invalid date string is provided', () => {
@@ -93,7 +115,7 @@ describe('Traffic Light Service', () => {
               { amount: -100, date: '2023-01-01', currency: 'USD', description: 'Credit', confidence: 0.99 }
             ]
           };
-          expect(gradeAirlockItem(payload, 0.99)).toBe('RED');
+          expect(gradeAirlockItem(payload, 0.99, 'asset-123').status).toBe('RED');
     });
 
     it('should prioritize RED over YELLOW (Precedence Logic)', () => {
@@ -104,7 +126,7 @@ describe('Traffic Light Service', () => {
         ]
       };
       // Sum = 10 (RED condition), Confidence = 0.8 (YELLOW condition) -> RED wins
-      expect(gradeAirlockItem(payload, 0.8)).toBe('RED');
+      expect(gradeAirlockItem(payload, 0.8, 'asset-123').status).toBe('RED');
     });
   });
 

@@ -201,6 +201,7 @@ export default function AirlockPage() {
             key={item?.id ?? 'loading'}
             initialData={item?.ai_payload ?? null}
             confidence={item?.confidence_score ?? 0}
+            assetId={item?.asset_id}
           />
           {/* Debug info - Optional, kept for visibility */}
           <div className="absolute bottom-2 right-2 text-xs text-gray-300">

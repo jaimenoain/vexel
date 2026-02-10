@@ -57,6 +57,7 @@ export function AirlockMobileModal({ isOpen, onClose, item, onSave }: AirlockMob
           initialData={item.ai_payload}
           confidence={item.confidence_score ?? 0}
           onChange={setEditedData}
+          assetId={item.asset_id}
         />
       </div>
 

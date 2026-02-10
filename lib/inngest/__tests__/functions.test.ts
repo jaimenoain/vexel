@@ -88,7 +88,7 @@ describe('Airlock Inngest Functions', () => {
         });
 
         // Mock Traffic Light
-        (gradeAirlockItem as jest.Mock).mockReturnValue('YELLOW');
+        (gradeAirlockItem as jest.Mock).mockReturnValue({ status: 'YELLOW' });
     });
 
     describe('updateItemStatus', () => {
@@ -148,7 +148,8 @@ describe('Airlock Inngest Functions', () => {
 
             expect(gradeAirlockItem).toHaveBeenCalledWith(
                 { transactions: [{ some: 'data', confidence: 0.8 }] },
-                0.8
+                0.8,
+                'asset-1'
             );
         });
 

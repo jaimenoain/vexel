@@ -31,7 +31,7 @@ jest.mock('../../lib/ai/factory', () => ({
 }));
 
 jest.mock('../../lib/airlock/traffic-light', () => ({
-  gradeAirlockItem: jest.fn().mockReturnValue('GREEN'),
+  gradeAirlockItem: jest.fn().mockReturnValue({ status: 'GREEN' }),
 }));
 
 jest.mock('@react-email/render', () => ({

@@ -23,6 +23,12 @@ jest.mock('../../airlock/traffic-light', () => ({
   gradeAirlockItem: jest.fn(),
 }));
 
+jest.mock('../../notification-service', () => ({
+  NotificationService: jest.fn().mockImplementation(() => ({
+    sendNotification: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
+
 describe('processDocumentHandler', () => {
   const mockStep = {
     run: jest.fn(async (name, callback) => callback()),
@@ -94,7 +100,7 @@ describe('processDocumentHandler', () => {
     mockParser.parse.mockResolvedValue(expectedExtraction);
 
     // Setup TrafficLight mock
-    (gradeAirlockItem as jest.Mock).mockReturnValue('GREEN');
+    (gradeAirlockItem as jest.Mock).mockReturnValue({ status: 'GREEN' });
 
     // Execute
     const result = await processDocumentHandler({ event: mockEvent as any, step: mockStep as any });
@@ -129,7 +135,8 @@ describe('processDocumentHandler', () => {
     // Check traffic light grading was called
     expect(gradeAirlockItem).toHaveBeenCalledWith(
       { transactions: expectedExtraction },
-      0.9 // Avg of 0.9 is 0.9
+      0.9, // Avg of 0.9 is 0.9
+      'asset-123'
     );
   });
 
