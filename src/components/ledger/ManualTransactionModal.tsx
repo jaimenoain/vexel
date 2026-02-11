@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Modal } from '@/src/components/common/Modal';
 import { Button } from '@/src/components/common/Button';
-import { Asset } from '@/lib/types';
+import { Asset, Contact } from '@/lib/types';
 import { addTransaction } from '@/app/ledger/actions';
 import { Loader2 } from 'lucide-react';
 
@@ -11,9 +11,10 @@ interface ManualTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   assets: Pick<Asset, 'id' | 'name' | 'currency'>[];
+  contacts?: Contact[];
 }
 
-export function ManualTransactionModal({ isOpen, onClose, assets }: ManualTransactionModalProps) {
+export function ManualTransactionModal({ isOpen, onClose, assets, contacts = [] }: ManualTransactionModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,8 +30,7 @@ export function ManualTransactionModal({ isOpen, onClose, assets }: ManualTransa
 
     if (result?.success) {
       onClose();
-      // Reset form on next open (or here if we want to clear inputs but keep modal in DOM)
-      // Since Modal unmounts content or we want fresh state, resetting is good practice.
+      // Reset form on next open
       (event.target as HTMLFormElement).reset();
     } else {
       setError(result?.error || 'An error occurred');
@@ -93,6 +93,26 @@ export function ManualTransactionModal({ isOpen, onClose, assets }: ManualTransa
             required
             className="border border-zinc-200 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent"
           />
+        </div>
+
+        {/* Contact (Payee/Payer) */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="contactId" className="text-sm font-medium text-zinc-700">
+            Payee / Payer
+          </label>
+          <select
+            name="contactId"
+            id="contactId"
+            className="border border-zinc-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent appearance-none bg-white"
+            defaultValue=""
+          >
+            <option value="">None</option>
+            {contacts.map((contact) => (
+              <option key={contact.id} value={contact.id}>
+                {contact.name} {contact.role ? `(${contact.role})` : ''}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Source (Credit) */}

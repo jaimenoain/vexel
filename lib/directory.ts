@@ -1,4 +1,5 @@
-import { Entity, Asset, EntityType, AssetType } from './types';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { Entity, Asset, EntityType, AssetType, Contact } from './types';
 
 export function buildDirectoryTree(data: any[]): Entity[] {
   if (!Array.isArray(data)) {
@@ -26,4 +27,36 @@ export function buildDirectoryTree(data: any[]): Entity[] {
 
     return entity;
   });
+}
+
+export async function getContacts(supabase: SupabaseClient): Promise<Contact[]> {
+  const { data, error } = await supabase
+    .from('contacts')
+    .select('*')
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching contacts:', error);
+    throw error;
+  }
+
+  return data as Contact[];
+}
+
+export async function createContact(
+  supabase: SupabaseClient,
+  contact: Pick<Contact, 'name' | 'role' | 'email'>
+): Promise<Contact> {
+  const { data, error } = await supabase
+    .from('contacts')
+    .insert(contact)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating contact:', error);
+    throw error;
+  }
+
+  return data as Contact;
 }

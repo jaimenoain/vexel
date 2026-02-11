@@ -9,6 +9,7 @@ import { useAuth } from '@/app/context/AuthContext';
 import { AirlockItem } from '@/lib/types';
 import { AirlockMobileList } from '@/src/components/airlock/AirlockMobileList';
 import { AirlockMobileModal } from '@/src/components/airlock/AirlockMobileModal';
+import { createClient } from '@/lib/supabase/client';
 
 interface AirlockItemWithUrl extends AirlockItem {
   url: string | null;
@@ -18,6 +19,8 @@ export default function AirlockPage() {
   const params = useParams();
   const id = params?.id as string;
   const { session, loading: authLoading } = useAuth();
+  // const session = { access_token: 'mock' };
+  // const authLoading = false;
 
   // Existing state
   const [item, setItem] = useState<AirlockItemWithUrl | null>(null);
@@ -75,6 +78,22 @@ export default function AirlockPage() {
     if (id) {
       fetchData();
     }
+
+    /* MOCK DATA
+    setItem({
+        id: 'mock-id',
+        asset_id: 'a1',
+        file_path: 'mock.pdf',
+        status: 'REVIEW_NEEDED',
+        ai_payload: { transactions: [{ date: '2023-01-01', description: 'Mock Tx', amount: 100 }] },
+        confidence_score: 0.9,
+        traffic_light: 'YELLOW',
+        created_at: '',
+        url: null,
+        contact_id: null
+    } as any);
+    setLoading(false);
+    */
   }, [id, session, authLoading]);
 
   // Fetch Mobile Queue (List)
@@ -98,6 +117,7 @@ export default function AirlockPage() {
     };
 
     fetchQueue();
+
   }, [isMobile, item?.asset_id, session]);
 
   const handleItemClick = (clickedItem: AirlockItem) => {
@@ -145,6 +165,23 @@ export default function AirlockPage() {
 
   const handleRemoveItem = (itemId: string) => {
     setMobileItems((prev) => prev.filter((i) => i.id !== itemId));
+  };
+
+  const handleContactChange = async (contactId: string | null) => {
+      if (!item) return;
+
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('airlock_items')
+        .update({ contact_id: contactId })
+        .eq('id', item.id);
+
+      if (error) {
+          console.error('Failed to update contact:', error);
+          // Ideally show a toast
+      } else {
+          console.log('Contact updated to:', contactId);
+      }
   };
 
   if (loading || authLoading) {
@@ -202,6 +239,8 @@ export default function AirlockPage() {
             initialData={item?.ai_payload ?? null}
             confidence={item?.confidence_score ?? 0}
             assetId={item?.asset_id}
+            contactId={item?.contact_id}
+            onContactChange={handleContactChange}
           />
           {/* Debug info - Optional, kept for visibility */}
           <div className="absolute bottom-2 right-2 text-xs text-gray-300">

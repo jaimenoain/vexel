@@ -19,6 +19,7 @@ export async function getAssets(supabase: SupabaseClient): Promise<Pick<Asset, '
 export interface CreateTransactionData {
   description: string;
   date: string;
+  contactId?: string | null;
   lines: {
     assetId: string;
     amount: number;
@@ -30,14 +31,15 @@ export async function createManualTransaction(
   supabase: SupabaseClient,
   data: CreateTransactionData
 ): Promise<string> {
-  const { description, date, lines } = data;
+  const { description, date, contactId, lines } = data;
 
   // 1. Create Transaction Header
   const { data: txn, error: txnError } = await supabase
     .from('ledger_transactions')
     .insert({
       description,
-      date
+      date,
+      contact_id: contactId
     })
     .select('id')
     .single();
@@ -122,6 +124,7 @@ export async function getLedgerHistory(supabase: SupabaseClient, assetId?: strin
       .from('ledger_transactions')
       .select(`
         *,
+        contact:contacts(*),
         lines:ledger_lines(
           *,
           asset:assets(*)
@@ -143,6 +146,7 @@ export async function getLedgerHistory(supabase: SupabaseClient, assetId?: strin
     .from('ledger_transactions')
     .select(`
       *,
+      contact:contacts(*),
       lines:ledger_lines(
         *,
         asset:assets(*)
