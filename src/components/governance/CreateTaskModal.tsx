@@ -146,7 +146,7 @@ export function CreateTaskModal({ isOpen, onClose, onTaskCreated }: CreateTaskMo
           <Button variant="ghost" onClick={onClose} type="button">
             Cancel
           </Button>
-          <Button type="submit" loading={loading}>
+          <Button type="submit" isLoading={loading}>
             Create Task
           </Button>
         </div>
