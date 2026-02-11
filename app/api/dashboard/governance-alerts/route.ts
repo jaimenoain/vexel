@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     const { data: tasks, error: taskError } = await supabase
       .from('governance_tasks')
-      .select('id, title, description, status, priority, created_at, asset_id, action_payload')
+      .select('id, title, description, status, priority, created_at, due_date, asset_id, action_payload')
       .eq('status', 'OPEN');
 
     if (taskError) {
