@@ -14,20 +14,16 @@ You can learn more, including how to opt-out if you'd not like to participate in
 https://nextjs.org/telemetry
 
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-✓ Ready in 1982ms
+✓ Ready in 1874ms
 ○ Compiling /login ...
 🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
- GET /login 200 in 6.9s (compile: 6.4s, proxy.ts: 8ms, render: 551ms)
-✓ Compiled in 66ms
- GET /governance 200 in 1238ms (compile: 1038ms, proxy.ts: 39ms, render: 162ms)
- GET /governance 200 in 102ms (compile: 8ms, proxy.ts: 9ms, render: 84ms)
+ GET /login 200 in 9.4s (compile: 8.4s, proxy.ts: 10ms, render: 941ms)
+✓ Compiled in 156ms
+ GET /documents 200 in 1427ms (compile: 1200ms, proxy.ts: 44ms, render: 183ms)
+ GET /documents 200 in 95ms (compile: 5ms, proxy.ts: 8ms, render: 81ms)
 🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
-CreateTaskModal Session: null
-Assets data: undefined
- GET /governance 200 in 471ms (compile: 156ms, proxy.ts: 8ms, render: 307ms)
-CreateTaskModal Session: null
-Assets data: undefined
- GET /governance 200 in 955ms (compile: 8ms, proxy.ts: 862ms, render: 85ms)
- GET /login 200 in 279ms (compile: 5ms, proxy.ts: 164ms, render: 111ms)
- GET /login 200 in 442ms (compile: 6ms, proxy.ts: 360ms, render: 75ms)
-✓ Compiled in 51ms
+ GET /documents 200 in 359ms (compile: 115ms, proxy.ts: 12ms, render: 232ms)
+✓ Compiled in 62ms
+✓ Compiled in 49ms
+ GET /documents 200 in 148ms (compile: 7ms, proxy.ts: 26ms, render: 115ms)
+✓ Compiled in 43ms
