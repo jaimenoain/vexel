@@ -4,13 +4,16 @@ import React, { useState } from 'react';
 import { LedgerTransaction, LedgerViewItem, GroupedTransaction } from '@/lib/types';
 import { groupTransactions, getTransactionDisplayData } from '@/lib/ledger/transformers';
 import { formatCurrency } from '@/lib/formatting';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown, Upload } from 'lucide-react';
+import { Button } from '@/src/components/common/Button';
+import { useRouter } from 'next/navigation';
 
 interface LedgerHistoryProps {
   transactions: LedgerTransaction[];
 }
 
 export function LedgerHistory({ transactions }: LedgerHistoryProps) {
+  const router = useRouter();
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   const viewItems = groupTransactions(transactions);
@@ -30,8 +33,21 @@ export function LedgerHistory({ transactions }: LedgerHistoryProps) {
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-white p-12 text-center text-zinc-400 border border-zinc-100 rounded-sm">
-        <p className="text-sm font-medium">No transaction history.</p>
+      <div className="bg-white py-16 px-6 text-center border border-zinc-100 rounded-sm flex flex-col items-center justify-center gap-6">
+        <div className="flex flex-col items-center gap-2">
+            <h3 className="text-lg font-medium text-zinc-900">No transaction history</h3>
+            <p className="text-sm text-zinc-500 max-w-sm">
+                Get started by importing your data via Airlock.
+            </p>
+        </div>
+        <Button
+            onClick={() => router.push('/airlock')}
+            icon={<Upload className="w-4 h-4" />}
+            variant="primary"
+            size="md"
+        >
+            Upload CSV via Airlock
+        </Button>
       </div>
     );
   }
