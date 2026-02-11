@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          await fetchProfile(session.user.id);
+          fetchProfile(session.user.id);
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // We only need to fetch profile if we don't have it or if the user changed
         // But for simplicity, we can fetch it to ensure freshness,
         // especially on SIGN_IN.
-        await fetchProfile(session.user.id);
+        fetchProfile(session.user.id);
       } else {
         setProfile(null);
       }
