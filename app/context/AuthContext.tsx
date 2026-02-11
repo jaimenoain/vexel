@@ -12,11 +12,15 @@ type AuthCredentials = {
   password: string;
 };
 
+type SignUpCredentials = AuthCredentials & {
+  redirectTo?: string;
+};
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
-  signUp: (params: AuthCredentials) => Promise<AuthResponse>;
+  signUp: (params: SignUpCredentials) => Promise<AuthResponse>;
   signIn: (params: AuthCredentials) => Promise<AuthResponse>;
   signOut: () => Promise<{ error: AuthError | null }>;
   loading: boolean;
@@ -85,10 +89,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async ({ email, password }: AuthCredentials) => {
+  const signUp = async ({ email, password, redirectTo }: SignUpCredentials) => {
     return await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: redirectTo || `${window.location.origin}/`,
+      },
     });
   };
 
