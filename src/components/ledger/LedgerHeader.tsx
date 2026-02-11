@@ -31,10 +31,11 @@ export function LedgerHeader({ assets = [], contacts = [] }: LedgerHeaderProps) 
         <Button
           variant="outline"
           onClick={handleImportCSV}
-          icon={<Upload className="h-4 w-4" />}
           size="sm"
+          className="px-2 md:px-3"
         >
-          Import CSV
+          <Upload className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Import CSV</span>
         </Button>
         <Button
           onClick={handleAddTransaction}
