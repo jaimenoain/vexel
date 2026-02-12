@@ -1,0 +1,31 @@
+
+> vexel-init@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+
+✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1795ms
+○ Compiling /verify-airlock ...
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ GET /verify-airlock 200 in 4.8s (compile: 4.2s, proxy.ts: 140ms, render: 416ms)
+ GET /verify-airlock 200 in 182ms (compile: 32ms, proxy.ts: 51ms, render: 99ms)
+ GET /verify-airlock 200 in 91ms (compile: 7ms, proxy.ts: 9ms, render: 75ms)
+ GET /verify-airlock 200 in 65ms (compile: 6ms, proxy.ts: 7ms, render: 52ms)
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+ GET /verify-airlock 200 in 264ms (compile: 103ms, proxy.ts: 11ms, render: 150ms)
+🌐 i18next is maintained with support from locize.com — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+AirlockList token: undefined
+ GET /verify-airlock 200 in 241ms (compile: 79ms, proxy.ts: 9ms, render: 154ms)
+AirlockList token: undefined
+ GET /verify-airlock 200 in 71ms (compile: 8ms, proxy.ts: 8ms, render: 55ms)
+✓ Compiled in 45ms

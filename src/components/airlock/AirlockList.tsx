@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { useAuth } from '@/app/context/AuthContext';
 import { FileText, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 interface AirlockItem {
@@ -13,7 +14,11 @@ interface AirlockItem {
   file_path: string;
 }
 
-const fetcher = (url: string) => fetch(url).then(async (res) => {
+const fetcher = ([url, token]: [string, string]) => fetch(url, {
+    headers: {
+        Authorization: `Bearer ${token}`
+    }
+}).then(async (res) => {
     if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || 'Failed to fetch');
@@ -22,8 +27,15 @@ const fetcher = (url: string) => fetch(url).then(async (res) => {
 });
 
 export function AirlockList({ assetId }: { assetId?: string | null }) {
+  const { session } = useAuth();
+  const token = session?.access_token;
   const url = assetId ? `/api/airlock?asset_id=${assetId}` : '/api/airlock';
-  const { data: items, error, isLoading } = useSWR<AirlockItem[]>(url, fetcher, { refreshInterval: 5000 });
+
+  const { data: items, error, isLoading } = useSWR<AirlockItem[]>(
+      token ? [url, token] : null,
+      fetcher,
+      { refreshInterval: 5000 }
+  );
 
   if (isLoading) {
       return (
