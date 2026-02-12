@@ -10,7 +10,7 @@ export const supabaseAdmin = new Proxy({} as SupabaseClient, {
   get: (_target, prop) => {
     if (!client) {
         if (!supabaseUrl || !supabaseServiceKey) {
-            throw new Error('Missing Supabase environment variables for Admin Client');
+            throw new Error('Missing Supabase environment variables for Admin Client. Please ensure SUPABASE_SERVICE_ROLE_KEY is set in your .env.local file.');
         }
         client = createClient(supabaseUrl, supabaseServiceKey, {
             auth: {
