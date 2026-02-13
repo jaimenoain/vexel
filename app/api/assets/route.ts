@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     if (entityError) {
       console.error('Entity creation error:', entityError);
-      return NextResponse.json({ error: 'Failed to create entity container' }, { status: 500 });
+      return NextResponse.json({ error: entityError.message || 'Failed to create entity container' }, { status: 500 });
     }
 
     // 5. Create Asset (Bypassing RLS, but setting owner_id)
@@ -65,13 +65,13 @@ export async function POST(request: Request) {
       console.error('Asset creation error:', assetError);
       // Cleanup entity if asset creation fails to avoid orphans
       await supabaseAdmin.from('entities').delete().eq('id', entity.id);
-      return NextResponse.json({ error: 'Failed to create asset' }, { status: 500 });
+      return NextResponse.json({ error: assetError.message || 'Failed to create asset' }, { status: 500 });
     }
 
     return NextResponse.json({ entity_id: entity.id, asset: asset });
 
   } catch (error: any) {
     console.error('API Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }
