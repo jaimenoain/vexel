@@ -24,7 +24,6 @@ describe('supabaseAdmin', () => {
   it('should throw an error when SUPABASE_SERVICE_ROLE_KEY is missing', () => {
     // Unset the key
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
-    delete process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
     // Ensure URL is set so we isolate the key check failure if both are required,
     // but the code checks (!url || !key), so missing either triggers it.
     // Let's set URL to be sure we are testing the Key specifically if possible,

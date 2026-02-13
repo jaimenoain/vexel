@@ -50,7 +50,6 @@ describe('Global Search API', () => {
 
   it('returns 500 if Supabase client init fails (missing env vars)', async () => {
       delete process.env.NEXT_PUBLIC_SUPABASE_URL;
-      delete process.env.VITE_SUPABASE_URL;
 
       const req = new Request('http://localhost/api/search?q=test', {
           headers: { Authorization: 'Bearer token' }

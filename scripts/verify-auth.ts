@@ -26,11 +26,11 @@ const loadEnv = () => {
 
 loadEnv();
 
-const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL) as string;
-const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY) as string;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Error: Supabase URL and Key must be set in .env, .env.local or environment (NEXT_PUBLIC_ or VITE_ prefixes).');
+  console.error('Error: Supabase URL and Key must be set in .env, .env.local or environment (NEXT_PUBLIC_ prefixes).');
   process.exit(1);
 }
 

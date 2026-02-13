@@ -24,11 +24,13 @@ Greenfield web application project for Global Family Offices.
 
 2.  **Environment Setup:**
 
-    Copy `.env.local.example` to `.env.local` and populate the Supabase keys.
+    Copy `.env.example` to `.env.local` and populate the Supabase keys.
 
     ```bash
-    cp .env.local.example .env.local
+    cp .env.example .env.local
     ```
+
+    > **Important:** You must provide the `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` for server-side administrative operations (like asset creation) to work correctly.
 
 3.  **Run the development server:**
 
