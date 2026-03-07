@@ -1,7 +1,7 @@
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <h1 className="text-3xl font-semibold tracking-tight text-black dark:text-zinc-50">
+    <div className="flex min-h-screen items-center justify-center bg-background font-sans">
+      <h1 className="text-3xl font-semibold tracking-tight text-foreground">
         Vexel Initialization
       </h1>
     </div>
