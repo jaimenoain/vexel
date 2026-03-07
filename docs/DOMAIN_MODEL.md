@@ -6,9 +6,57 @@ As your Principal Data & API Architect, I am enforcing the strict decoupling of 
 
 ---
 
+## **Phase 1 Implementation (Current Reality – Identity & Auth)**
+
+The following reflects what is **actually implemented** at Phase 1 completion. Code and migrations are the source of truth.
+
+### Authentication (Supabase Auth + Resend)
+
+- **Identity provider:** Supabase Auth (`auth.users`). Passwords and sessions are managed by Supabase; the application does not store or handle password hashes.
+- **Transactional email:** Password reset (and any other auth emails) are sent via Supabase’s email configuration (e.g. Resend). No application code sends email directly; no secrets are documented here.
+
+### public.users table (PostgreSQL, Supabase)
+
+Synced from Supabase Auth for app use. Schema as implemented in `supabase/migrations/`:
+
+| Column       | Type         | Notes |
+| ------------ | ------------ | ----- |
+| id           | uuid PK      | References `auth.users(id)` ON DELETE CASCADE |
+| email        | text NOT NULL UNIQUE | |
+| first_name   | text NOT NULL | |
+| last_name    | text NOT NULL | |
+| role         | text NOT NULL DEFAULT 'viewer' | CHECK (role IN ('admin', 'editor', 'viewer', 'guest')) |
+| created_at   | timestamptz NOT NULL DEFAULT now() |
+| updated_at   | timestamptz NOT NULL DEFAULT now() |
+
+**No `password_hash`** — credentials live only in `auth.users`.
+
+### Sync from Auth to public.users
+
+- **Trigger:** `on_auth_user_created` AFTER INSERT on `auth.users` runs `public.handle_new_auth_user()`.
+- **Function:** `handle_new_auth_user()` (SECURITY DEFINER) inserts into `public.users` using `new.id`, `new.email`, and `new.raw_user_meta_data->>'first_name'` / `'last_name'`, default role `'viewer'`. Uses `ON CONFLICT (id) DO UPDATE` so profile updates (e.g. email/name) are reflected.
+- **App sign-up:** Server action `signUp` calls Supabase `auth.signUp()` with user_metadata (first_name, last_name); the trigger creates the `public.users` row. No separate app-level insert.
+
+### RLS on public.users (Phase 1)
+
+- **Enabled:** RLS is on for `public.users`.
+- **Policies:**
+  - **Select:** User can read only the row where `auth.uid() = id`.
+  - **Insert:** User can insert only the row where `auth.uid() = id` (used when trigger runs in context of signup flow; trigger uses SECURITY DEFINER so it can insert regardless).
+  - **Update:** User can update only the row where `auth.uid() = id`.
+- **Not implemented in Phase 1:** No admin/editor “read all users” policy; no DELETE policy (only Supabase Auth can remove users via `auth.users` cascade).
+
+### API / DTOs (Phase 1)
+
+- No `/api/v1/settings` or `/api/v1/users/me` yet. Session user is obtained via `getCurrentUser()` (Supabase `auth.getUser()`). Profile data (e.g. from `public.users`) for “current user” will be added in Phase 2 when those API routes or equivalent are implemented.
+
+---
+
 ## **Domain 1: The Identity & Configuration Domain**
 
 This domain handles the multi-user access levels, global system parameters, and ensures that the base currency is locked in at the database level once the organization is initialized.
+
+*Phase 1 implements only Supabase Auth + `public.users` sync and RLS as above. The schema and policies below are the **target** for Phase 2+ (e.g. organization_settings, role-based CREATE/DELETE on users).*
 
 ### **1\. Database Schema (Prisma)**
 
