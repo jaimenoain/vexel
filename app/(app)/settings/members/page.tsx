@@ -28,7 +28,7 @@ export type PendingRequestRow = {
 
 export default async function SettingsMembersPage() {
   const session = await requireTenantSession();
-  if (session.error) {
+  if ("error" in session) {
     redirect(session.status === 401 ? "/login" : "/onboarding");
   }
   if (!tenantConfig.roles.admin.includes(session.role)) {

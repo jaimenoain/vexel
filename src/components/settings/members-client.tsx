@@ -97,7 +97,11 @@ export function MembersClient({
       setMembers((prev) =>
         prev.map((m) => (m.id === userId ? { ...m, role: newRole } : m))
       );
-      setRoleEdits((e) => ({ ...e, [userId]: undefined }));
+      setRoleEdits((e) => {
+        const next = { ...e };
+        delete next[userId];
+        return next;
+      });
     } else {
       setError(result.error);
     }

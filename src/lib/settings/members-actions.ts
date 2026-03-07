@@ -5,7 +5,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { tenantConfig } from "../../../tenant-system.config";
 
 export type MembersActionResult =
-  | { success: true }
   | { success: true; data?: { id?: string } }
   | { success: false; error: string };
 
@@ -18,7 +17,7 @@ async function requireAdmin(): Promise<
   | { success: false; error: string }
 > {
   const session = await requireTenantSession();
-  if (session.error) {
+  if ("error" in session) {
     return { success: false, error: session.error === "UNAUTHENTICATED" ? "Not authenticated" : "No tenant" };
   }
   if (!isAdmin(session.role)) {
