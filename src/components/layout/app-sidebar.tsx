@@ -13,6 +13,7 @@ import {
   Settings,
   TrendingDown,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import { logOut } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ const navItems = [
   { label: "Documents", href: "/documents", icon: FileText },
   { label: "Entities", href: "/entities", icon: Building },
   { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Members", href: "/settings/members", icon: Users },
 ] as const;
 
 function LogOutButton() {
