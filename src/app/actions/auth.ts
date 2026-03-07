@@ -28,21 +28,7 @@ export async function signUp(formData: {
     return { error: error.message };
   }
 
-  if (data.user && data.user.identities && data.user.identities.length > 0) {
-    const { error: insertError } = await supabase.from("users").upsert(
-      {
-        id: data.user.id,
-        email: data.user.email!,
-        first_name: firstName,
-        last_name: lastName,
-        role: "viewer",
-      },
-      { onConflict: "id" }
-    );
-    if (insertError) {
-      return { error: insertError.message };
-    }
-  }
+  // public.users row is created by DB trigger (handle_new_auth_user) on auth.users insert
 
   revalidatePath("/", "layout");
   redirect("/login");
